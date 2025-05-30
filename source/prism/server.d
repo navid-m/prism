@@ -44,6 +44,9 @@ struct RequestContext
  */
 alias RouteHandler = Response delegate(RequestContext context);
 alias PostRouteHandler = Response delegate(RequestContext context);
+alias PutRouteHandler = Response delegate(RequestContext context);
+alias PatchRouteHandler = Response delegate(RequestContext context);
+alias DeleteRouteHandler = Response delegate(RequestContext context);
 
 /** 
  * Route pattern structure to handle parameterized routes
@@ -54,7 +57,10 @@ struct RoutePattern
 	string[] paramNames;
 	RouteHandler handler;
 	PostRouteHandler postHandler;
-	bool isPost;
+	PutRouteHandler putHandler;
+	PatchRouteHandler patchHandler;
+	DeleteRouteHandler deleteHandler;
+	string method;
 }
 
 /** 
@@ -89,7 +95,16 @@ class PrismApplication
 	void get(string path, RouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
-		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, handler, null, false);
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			handler,
+			null,
+			null,
+			null,
+			null,
+			"GET"
+		);
 	}
 
 	/** 
@@ -102,9 +117,17 @@ class PrismApplication
 	void post(string path, PostRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
-		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, handler, true);
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			null,
+			handler,
+			null,
+			null,
+			null,
+			"POST"
+		);
 	}
-
 	/** 
 	* Parse route pattern to extract parameter names
 	*/
@@ -270,6 +293,30 @@ class PrismApplication
 		return requestLine.length >= 2 ? requestLine[1] : "/";
 	}
 
+	void put(string path, PutRouteHandler handler)
+	{
+		auto pattern = parseRoutePattern(path);
+		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, handler, null, null, "PUT");
+	}
+
+	void patch(string path, PatchRouteHandler handler)
+	{
+		auto pattern = parseRoutePattern(path);
+		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, null, handler, null, "PATCH");
+	}
+
+	/** 
+	 * Register path to delete some content.
+	 * Params:
+	 *   path = 
+	 *   handler = 
+	 */
+	void del(string path, DeleteRouteHandler handler)
+	{
+		auto pattern = parseRoutePattern(path);
+		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, null, null, handler, "DELETE");
+	}
+
 	/** 
 	 * Extract the request body from a POST request.
 	 */
@@ -288,27 +335,36 @@ class PrismApplication
 	{
 		foreach (route; routes)
 		{
-			if ((method == "GET" && !route.isPost) || (method == "POST" && route.isPost))
+			if (route.method != method)
+				continue;
+
+			auto routeRegex = regex(route.pattern);
+			auto match = matchFirst(path, routeRegex);
+
+			if (match)
 			{
-				auto routeRegex = regex(route.pattern);
-				auto match = matchFirst(path, routeRegex);
+				for (size_t i = 0; i < route.paramNames.length && i + 1 < match.length;
+					i++)
+					context.params[route.paramNames[i]] = match[i + 1];
 
-				if (match)
+				final switch (method)
 				{
-					for (size_t i = 0; i < route.paramNames.length && i + 1 < match.length;
-						i++)
-						context.params[route.paramNames[i]] = match[i + 1];
-
-					if (route.isPost && route.postHandler)
-						return route.postHandler(context);
-					else if (!route.isPost && route.handler)
-						return route.handler(context);
+				case "GET":
+					return route.handler(context);
+				case "POST":
+					return route.postHandler(context);
+				case "PUT":
+					return route.putHandler(context);
+				case "PATCH":
+					return route.patchHandler(context);
+				case "DELETE":
+					return route.deleteHandler(context);
 				}
 			}
 		}
-
 		return Response("<html><body><h1>404 Not Found</h1></body></html>", ResponseType.HTML);
 	}
+
 }
 
 Response html(string content) => Response(content, ResponseType.HTML);
@@ -352,6 +408,23 @@ unittest
 		auto userId = context.params.get("id", "unknown");
 		return json(
 			`{"status": "success", "message": "User ` ~ userId ~ ` updated", "data": ` ~ context.body ~ `}`);
+	});
+
+	app.put("/api/users/:id", (context) {
+		auto userId = context.params.get("id", "unknown");
+		return json(
+			`{"status": "success", "message": "User ` ~ userId ~ ` fully updated", "data": ` ~ context.body ~ `}`);
+	});
+
+	app.patch("/api/users/:id", (context) {
+		auto userId = context.params.get("id", "unknown");
+		return json(
+			`{"status": "success", "message": "User ` ~ userId ~ ` partially updated", "changes": ` ~ context.body ~ `}`);
+	});
+
+	app.del("/api/users/:id", (context) {
+		auto userId = context.params.get("id", "unknown");
+		return json(`{"status": "success", "message": "User ` ~ userId ~ ` deleted"}`);
 	});
 
 	app.run();
