@@ -1,4 +1,4 @@
-module prism;
+module prism.server;
 
 import std;
 
