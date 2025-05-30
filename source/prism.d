@@ -26,7 +26,7 @@ class PrismApplication
 		server = new TcpSocket();
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
-		server.listen(10);
+		server.listen(1000);
 	}
 
 	/** 
