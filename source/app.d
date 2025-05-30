@@ -5,6 +5,9 @@ import std.conv;
 import std.array;
 import std.functional;
 import std.typecons;
+import std.datetime;
+import std.algorithm;
+import std.conv;
 
 alias RouteHandler = string delegate();
 
@@ -31,39 +34,54 @@ class PrismApplication
 		writeln("Server running at http://localhost:8080");
 		scope (exit)
 			server.close();
-		import std.algorithm;
 
 		while (true)
 		{
 			auto client = server.accept();
-			scope (exit)
-				client.close();
 
-			ubyte[4096] buffer;
-			size_t totalRead = 0;
+			client.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
+			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(5));
 
-			while (true)
+			void handleClient(Socket client)
 			{
-				auto bytesRead = client.receive(buffer[totalRead .. $]);
-				if (bytesRead <= 0)
-					break;
-				totalRead += bytesRead;
-				if (totalRead >= buffer.length || cast(string)(buffer[0 .. totalRead]))
+				scope (exit)
+					client.close();
 
-					break;
+				while (true)
+				{
+					ubyte[4096] buffer;
+					size_t totalRead = 0;
+
+					while (true)
+					{
+						auto bytesRead = client.receive(buffer[totalRead .. $]);
+						if (bytesRead <= 0)
+							return;
+						totalRead += bytesRead;
+						auto chunk = cast(string) buffer[0 .. totalRead];
+						if (chunk.canFind("\r\n\r\n"))
+							break;
+					}
+
+					auto request = cast(string) buffer[0 .. totalRead];
+					auto path = extractPath(request);
+					auto responseBody = handleRoute(path);
+					bool keepAlive = request.toLower().canFind("connection: keep-alive");
+
+					string responseHeader = "HTTP/1.1 200 OK\r\n"
+						~ "Content-Type: text/html\r\n"
+						~ "Content-Length: " ~ to!string(responseBody.length) ~ "\r\n"
+						~ (keepAlive ? "Connection: keep-alive\r\n\r\n"
+								: "Connection: close\r\n\r\n");
+
+					client.send(cast(ubyte[])(responseHeader ~ responseBody));
+
+					if (!keepAlive)
+						break;
+				}
 			}
 
-			if (totalRead == 0)
-				continue;
-
-			auto request = cast(string) buffer[0 .. totalRead];
-			auto path = extractPath(request);
-			auto responseBody = handleRoute(path);
-			auto responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " ~
-				to!string(
-					responseBody.length) ~ "\r\nConnection: close\r\n\r\n";
-
-			client.send(cast(ubyte[])(responseHeader ~ responseBody));
+			handleClient(client);
 		}
 	}
 
@@ -87,10 +105,8 @@ class PrismApplication
 void main()
 {
 	auto app = new PrismApplication();
-
 	app.get("/", () => "<html><body><h1>Welcome to D Prism Framework</h1></body></html>");
 	app.get("/about", () => "<html><body><h1>About Page</h1></body></html>");
 	app.get("/hello", () => "<html><body><h1>Hello World!</h1></body></html>");
-
 	app.run();
 }
