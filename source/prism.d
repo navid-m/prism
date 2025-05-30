@@ -1,13 +1,6 @@
-import std.stdio;
-import std.socket;
-import std.string;
-import std.conv;
-import std.array;
-import std.functional;
-import std.typecons;
-import std.datetime;
-import std.algorithm;
-import std.conv;
+module prism;
+
+import std;
 
 alias RouteHandler = string delegate();
 
