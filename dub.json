@@ -1,7 +1,7 @@
 {
    "authors": ["Navid"],
    "copyright": "Copyright © 2025, Navid",
-   "description": "A web framework for Dlang",
+   "description": "Performant, modern web framework",
    "license": "GPL-3.0",
    "name": "prism"
 }
