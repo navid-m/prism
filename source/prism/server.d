@@ -66,11 +66,11 @@ class PrismApplication
 	private RoutePattern[] routes;
 
 	/** 
-     * Instantiate a new application.
-     *
-     * Params:
-     *   port = Port to operate on
-     */
+	* Instantiate a new application.
+	*
+	* Params:
+	*   port = Port to operate on
+	*/
 	this(ushort port = 8080)
 	{
 		server = new TcpSocket();
@@ -80,12 +80,12 @@ class PrismApplication
 	}
 
 	/** 
-     * Set a GET method route with optional URL parameters.
-     *
-     * Params:
-     *   path = The path pattern (e.g., "/users/:id" or "/users/:id/posts/:postId")
-     *   handler = The handler/delegate for the route
-     */
+	* Set a GET method route with optional URL parameters.
+	*
+	* Params:
+	*   path = The path pattern (e.g., "/users/:id" or "/users/:id/posts/:postId")
+	*   handler = The handler/delegate for the route
+	*/
 	void get(string path, RouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
@@ -93,12 +93,12 @@ class PrismApplication
 	}
 
 	/** 
-     * Set a POST method route with optional URL parameters.
-     *
-     * Params:
-     *   path = The path pattern (e.g., "/users/:id" or "/api/data")
-     *   handler = The handler/delegate for the route
-     */
+	* Set a POST method route with optional URL parameters.
+	*
+	* Params:
+	*   path = The path pattern (e.g., "/users/:id" or "/api/data")
+	*   handler = The handler/delegate for the route
+	*/
 	void post(string path, PostRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
@@ -106,8 +106,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Parse route pattern to extract parameter names
-     */
+	* Parse route pattern to extract parameter names
+	*/
 	private auto parseRoutePattern(string path)
 	{
 		string[] paramNames;
@@ -127,8 +127,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Run the application.
-     */
+	* Run the application.
+	*/
 	void run()
 	{
 		writeln("Go to http://localhost:8080");
@@ -198,8 +198,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Parse path and query parameters
-     */
+	 * Parse path and query parameters
+	 */
 	private auto parsePathAndQuery(string fullPath)
 	{
 		string[string] queryParams;
@@ -231,8 +231,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Get content type based on response type
-     */
+	 * Get content type based on response type
+	 */
 	private string getContentType(ResponseType type)
 	{
 		switch (type)
@@ -248,8 +248,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Extract the HTTP method from the request.
-     */
+	 * Extract the HTTP method from the request.
+	 */
 	private string extractMethod(string request)
 	{
 		auto i = request.indexOf(" ");
@@ -259,8 +259,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Extract the path given some URI request in string form.
-     */
+	 * Extract the path given some URI request in string form.
+	 */
 	private string extractPath(string request)
 	{
 		auto i = request.indexOf("\r\n");
@@ -271,8 +271,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Extract the request body from a POST request.
-     */
+	 * Extract the request body from a POST request.
+	 */
 	private string extractBody(string request)
 	{
 		auto headerEnd = request.indexOf("\r\n\r\n");
@@ -282,8 +282,8 @@ class PrismApplication
 	}
 
 	/** 
-     * Handle the route based on method and path with parameter matching.
-     */
+	 * Handle the route based on method and path with parameter matching.
+	 */
 	private Response handleRoute(string method, string path, ref RequestContext context)
 	{
 		foreach (route; routes)
@@ -311,23 +311,9 @@ class PrismApplication
 	}
 }
 
-/** 
- * Helper functions for creating responses
- */
-Response html(string content)
-{
-	return Response(content, ResponseType.HTML);
-}
-
-Response json(string content)
-{
-	return Response(content, ResponseType.JSON);
-}
-
-Response text(string content)
-{
-	return Response(content, ResponseType.TEXT);
-}
+Response html(string content) => Response(content, ResponseType.HTML);
+Response json(string content) => Response(content, ResponseType.JSON);
+Response text(string content) => Response(content, ResponseType.TEXT);
 
 unittest
 {
