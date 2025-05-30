@@ -9,6 +9,12 @@ class PrismApplication
 	private TcpSocket server;
 	private string[string] routes;
 
+	/** 
+	 * Instantiate a new application.
+	 *
+	 * Params:
+	 *   port = Port to operate on
+	 */
 	this(ushort port = 8080)
 	{
 		server = new TcpSocket();
@@ -17,11 +23,21 @@ class PrismApplication
 		server.listen(10);
 	}
 
+	/** 
+	 * Set a GET method route.
+	 *
+	 * Params:
+	 *   path = The path to set
+	 *   handler = The handler/delegate for the route
+	 */
 	void get(string path, RouteHandler handler)
 	{
 		routes[path] = handler();
 	}
 
+	/** 
+	 * Run the application.
+	 */
 	void run()
 	{
 		writeln("Go to http://localhost:8080");
@@ -76,6 +92,14 @@ class PrismApplication
 		}
 	}
 
+	/** 
+	 * Extract the path given some URI request in string form.
+	 *
+	 * Params:
+	 *   request = The request itself
+	 *
+	 * Returns: The extracted path
+	 */
 	private string extractPath(string request)
 	{
 		auto i = request.indexOf("\r\n");
@@ -85,6 +109,13 @@ class PrismApplication
 		return requestLine.length >= 2 ? requestLine[1] : "/";
 	}
 
+	/** 
+	 * Handle the route.
+	 *
+	 * Params:
+	 *   path = The path of the route
+	 * Returns: The corresponding response
+	 */
 	private string handleRoute(string path)
 	{
 		if (auto handler = path in routes)
