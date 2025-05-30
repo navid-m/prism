@@ -2,8 +2,14 @@ module prism;
 
 import std;
 
+/** 
+ * Some handler that returns a string response.
+ */
 alias RouteHandler = string delegate();
 
+/** 
+ * The application itself.
+ */
 class PrismApplication
 {
 	private TcpSocket server;
