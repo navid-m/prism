@@ -1,7 +1,7 @@
 ## Usage
 
 ```d
-auto app = new PrismApplication();
+auto app = new PrismApplication(2000);
 
 app.get("/", (context) => html("<h1>Hello</h1>"));
 
@@ -9,8 +9,6 @@ app.post("/submit", (context) => json(`{"received": true}`));
 
 app.run();
 ```
-
-Visit `http://localhost:8080` in your browser.
 
 ## Route Parameters
 
