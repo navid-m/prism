@@ -293,12 +293,18 @@ class PrismApplication
 		return requestLine.length >= 2 ? requestLine[1] : "/";
 	}
 
+	/** 
+	 * Register PUT path.
+	 */
 	void put(string path, PutRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
 		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, handler, null, null, "PUT");
 	}
 
+	/** 
+	 * Register PATCH path.
+	 */
 	void patch(string path, PatchRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
@@ -306,10 +312,7 @@ class PrismApplication
 	}
 
 	/** 
-	 * Register path to delete some content.
-	 * Params:
-	 *   path = 
-	 *   handler = 
+	 * Register DELETE path.
 	 */
 	void del(string path, DeleteRouteHandler handler)
 	{
