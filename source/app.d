@@ -2,12 +2,9 @@ import std.stdio;
 import std.socket;
 import std.string;
 import std.conv;
-import std.algorithm;
 import std.array;
-import std.exception;
 import std.functional;
 import std.typecons;
-import std.format;
 
 alias RouteHandler = string delegate();
 
@@ -19,6 +16,7 @@ class PrismApplication
 	this(ushort port = 8080)
 	{
 		server = new TcpSocket();
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
 		server.listen(10);
 	}
@@ -33,6 +31,7 @@ class PrismApplication
 		writeln("Server running at http://localhost:8080");
 		scope (exit)
 			server.close();
+		import std.algorithm;
 
 		while (true)
 		{
@@ -41,40 +40,47 @@ class PrismApplication
 				client.close();
 
 			ubyte[4096] buffer;
-			auto bytesRead = client.receive(buffer);
-			if (bytesRead <= 0)
+			size_t totalRead = 0;
+
+			while (true)
+			{
+				auto bytesRead = client.receive(buffer[totalRead .. $]);
+				if (bytesRead <= 0)
+					break;
+				totalRead += bytesRead;
+				if (totalRead >= buffer.length || cast(string)(buffer[0 .. totalRead]))
+
+					break;
+			}
+
+			if (totalRead == 0)
 				continue;
 
-			auto request = cast(string) buffer[0 .. bytesRead];
-			writeln("Received request:\n", request);
-
+			auto request = cast(string) buffer[0 .. totalRead];
 			auto path = extractPath(request);
 			auto responseBody = handleRoute(path);
 
-			string response = format(
-				"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %s\r\nConnection: close\r\n\r\n%s",
-				responseBody.length, responseBody
-			);
+			auto responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " ~
+				to!string(
+					responseBody.length) ~ "\r\nConnection: close\r\n\r\n";
 
-			client.send(cast(ubyte[]) response);
+			client.send(cast(ubyte[])(responseHeader ~ responseBody));
 		}
 	}
 
 	private string extractPath(string request)
 	{
-		auto lines = request.splitLines();
-		if (lines.length == 0)
+		auto i = request.indexOf("\r\n");
+		if (i == -1)
 			return "/";
-		auto requestLine = lines[0].split();
-		if (requestLine.length >= 2)
-			return requestLine[1];
-		return "/";
+		auto requestLine = request[0 .. i].split();
+		return requestLine.length >= 2 ? requestLine[1] : "/";
 	}
 
 	private string handleRoute(string path)
 	{
 		if (auto handler = path in routes)
-			return (*handler);
+			return *handler;
 		return "<html><body><h1>404 Not Found</h1></body></html>";
 	}
 }
