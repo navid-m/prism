@@ -295,12 +295,9 @@ class PrismApplication
 
 				if (match)
 				{
-					// Extract path parameters
 					for (size_t i = 0; i < route.paramNames.length && i + 1 < match.length;
 						i++)
-					{
 						context.params[route.paramNames[i]] = match[i + 1];
-					}
 
 					if (route.isPost && route.postHandler)
 						return route.postHandler(context);
