@@ -130,11 +130,11 @@ class PrismApplication
 	}
 }
 
-void main()
-{
-	auto app = new PrismApplication();
-	app.get("/", () => "<html><body><h1>Welcome to D Prism Framework</h1></body></html>");
-	app.get("/about", () => "<html><body><h1>About Page</h1></body></html>");
-	app.get("/hello", () => "<html><body><h1>Hello World!</h1></body></html>");
-	app.run();
-}
+// void main()
+// {
+// 	auto app = new PrismApplication();
+// 	app.get("/", () => "<html><body><h1>Welcome to D Prism Framework</h1></body></html>");
+// 	app.get("/about", () => "<html><body><h1>About Page</h1></body></html>");
+// 	app.get("/hello", () => "<html><body><h1>Hello World!</h1></body></html>");
+// 	app.run();
+// }
