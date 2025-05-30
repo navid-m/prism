@@ -41,5 +41,3 @@ text("Plain text");
 ---
 
 Navid M © 2025
-
-No warranty. Not ever.
