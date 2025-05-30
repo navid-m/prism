@@ -24,7 +24,7 @@ class PrismApplication
 
 	void run()
 	{
-		writeln("Server running at http://localhost:8080");
+		writeln("Go to http://localhost:8080");
 
 		scope (exit)
 			server.close();
