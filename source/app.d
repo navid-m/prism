@@ -59,7 +59,6 @@ class PrismApplication
 			auto request = cast(string) buffer[0 .. totalRead];
 			auto path = extractPath(request);
 			auto responseBody = handleRoute(path);
-
 			auto responseHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " ~
 				to!string(
 					responseBody.length) ~ "\r\nConnection: close\r\n\r\n";
