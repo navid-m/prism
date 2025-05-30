@@ -1,12 +1,4 @@
-## Features
-
--  Route matching with path parameters (e.g. `/users/:id`)
--  Basic request parsing (method, path, query, body)
--  Simple response types (`HTML`, `JSON`, `TEXT`)
--  Supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`
--  No external dependencies besides the D stdlib.
-
-## Getting Started
+## Usage
 
 ```d
 auto app = new PrismApplication();
