@@ -30,7 +30,7 @@ app.get("/search", (context) {
 });
 ```
 
-## Response Helpers
+## Response Types
 
 ```d
 html("<h1>HTML</h1>");
