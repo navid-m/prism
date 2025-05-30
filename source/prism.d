@@ -25,6 +25,7 @@ class PrismApplication
 	void run()
 	{
 		writeln("Server running at http://localhost:8080");
+
 		scope (exit)
 			server.close();
 
@@ -57,18 +58,15 @@ class PrismApplication
 					}
 
 					auto request = cast(string) buffer[0 .. totalRead];
-					auto path = extractPath(request);
-					auto responseBody = handleRoute(path);
+					auto responseBody = handleRoute(extractPath(request));
 					bool keepAlive = request.toLower().canFind("connection: keep-alive");
-
 					string responseHeader = "HTTP/1.1 200 OK\r\n"
 						~ "Content-Type: text/html\r\n"
 						~ "Content-Length: " ~ to!string(responseBody.length) ~ "\r\n"
 						~ (keepAlive ? "Connection: keep-alive\r\n\r\n"
 								: "Connection: close\r\n\r\n");
-
-					client.send(cast(ubyte[])(responseHeader ~ responseBody));
-
+					client.send(
+						cast(ubyte[])(responseHeader ~ responseBody));
 					if (!keepAlive)
 						break;
 				}
