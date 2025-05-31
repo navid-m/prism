@@ -111,7 +111,7 @@ class PrismApplication
 	*   rootPath = Filesystem directory path (e.g., "./public", "./assets")
 	*   listDirectories = Whether to allow directory listing (default: false)
 	*/
-	void serveStatic(string mountPath, string rootPath, bool listDirectories = false)
+	void useStatic(string mountPath, string rootPath, bool listDirectories = false)
 	{
 		if (!mountPath.startsWith("/"))
 			mountPath = "/" ~ mountPath;
@@ -591,9 +591,9 @@ unittest
 {
 	auto app = new PrismApplication();
 
-	app.serveStatic("/static", "./public");
-	app.serveStatic("/assets", "./assets", true);
-	app.serveStatic("/downloads", "./files");
+	app.useStatic("/static", "./public");
+	app.useStatic("/assets", "./assets", true);
+	app.useStatic("/downloads", "./files");
 
 	app.get("/", (context) => html(
 			`<html><body>
