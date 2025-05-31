@@ -513,11 +513,13 @@ class PrismApplication
 
 			void handleClient(Socket client)
 			{
-				// Currently causes WS issue, but will leak memory if left commented out.
-				// Looking for fix.
+				bool isWebSocket = false;
 
-				// scope (exit)
-				// 	client.close();
+				scope (exit)
+				{
+					if (!isWebSocket)
+						client.close();
+				}
 
 				while (true)
 				{
@@ -548,7 +550,10 @@ class PrismApplication
 					context.method = method;
 
 					if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
+					{
+						isWebSocket = true;
 						return;
+					}
 
 					Response response;
 
