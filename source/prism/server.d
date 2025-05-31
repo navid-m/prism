@@ -387,9 +387,7 @@ class PrismApplication
 			string normalizedPath = buildNormalizedPath(fullPath);
 			string normalizedRoot = buildNormalizedPath(mount.rootPath);
 			if (!normalizedPath.startsWith(normalizedRoot))
-			{
 				return Response("403 Forbidden", ResponseType.PLAINTEXT);
-			}
 
 			if (!exists(fullPath))
 				continue;
