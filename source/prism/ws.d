@@ -42,40 +42,40 @@ class WebSocketConnection
     }
 
     /**
-	 * Send text message to WebSocket client
-	 */
+     * Send text message to WebSocket client
+     */
     void sendText(string message)
     {
         sendFrame(WebSocketOpcode.TEXT, cast(ubyte[]) message);
     }
 
     /**
-	 * Send binary message to WebSocket client
-	 */
+     * Send binary message to WebSocket client
+     */
     void sendBinary(ubyte[] data)
     {
         sendFrame(WebSocketOpcode.BINARY, data);
     }
 
     /**
-	 * Send ping frame
-	 */
+     * Send ping frame
+     */
     void ping(ubyte[] data = [])
     {
         sendFrame(WebSocketOpcode.PING, data);
     }
 
     /**
-	 * Send pong frame
-	 */
+     * Send pong frame
+     */
     void pong(ubyte[] data = [])
     {
         sendFrame(WebSocketOpcode.PONG, data);
     }
 
     /**
-	 * Close WebSocket connection
-	 */
+     * Close WebSocket connection
+     */
     void close(ushort code = 1000, string reason = "")
     {
         if (!isOpen)
@@ -92,13 +92,13 @@ class WebSocketConnection
     }
 
     /**
-	 * Check if connection is open
-	 */
+     * Check if connection is open
+     */
     bool isConnectionOpen() => isOpen;
 
     /**
-	 * Send WebSocket frame
-	 */
+     * Send WebSocket frame
+     */
     private void sendFrame(WebSocketOpcode opcode, ubyte[] payload)
     {
         if (!isOpen)
@@ -139,8 +139,8 @@ class WebSocketConnection
     }
 
     /**
-	 * Receive and parse WebSocket frame
-	 */
+     * Receive and parse WebSocket frame
+     */
     WebSocketFrame receiveFrame()
     {
         WebSocketFrame frame;
