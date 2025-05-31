@@ -46,7 +46,7 @@ class WebSocketConnection
         this.socket.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
     }
 
-    /// Send a text message to the client (RFC 6455 §5.6)
+    /// Send a text message to the client (RFC 6455 5.6)
     void sendText(string message)
     {
         sendFrame(WebSocketOpcode.TEXT, cast(ubyte[]) message);
@@ -58,21 +58,21 @@ class WebSocketConnection
         sendFrame(WebSocketOpcode.BINARY, data);
     }
 
-    /// Send ping control frame (RFC 6455 §5.5.2)
+    /// Send ping control frame (RFC 6455 5.5.2)
     void ping(ubyte[] data = [])
     {
         enforce(data.length <= 125, "Ping frame payload too large");
         sendFrame(WebSocketOpcode.PING, data);
     }
 
-    /// Send pong control frame (RFC 6455 §5.5.3)
+    /// Send pong control frame (RFC 6455 5.5.3)
     void pong(ubyte[] data = [])
     {
         enforce(data.length <= 125, "Pong frame payload too large");
         sendFrame(WebSocketOpcode.PONG, data);
     }
 
-    /// Close the WebSocket connection (RFC 6455 §5.5.1)
+    /// Close the WebSocket connection (RFC 6455 5.5.1)
     void close(ushort code = 1000, string reason = "")
     {
         if (!isOpen)
@@ -92,7 +92,7 @@ class WebSocketConnection
     /// Check if the WebSocket connection is still open
     bool isConnectionOpen() => isOpen;
 
-    /// Send a WebSocket frame (RFC 6455 §5.2)
+    /// Send a WebSocket frame (RFC 6455 5.2)
     private void sendFrame(WebSocketOpcode opcode, ubyte[] payload)
     {
         if (!isOpen)
