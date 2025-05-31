@@ -84,6 +84,7 @@ struct RoutePattern
 {
 	string pattern;
 	string[] paramNames;
+	Regex!char compiledRegex;
 	RouteHandler handler;
 	PostRouteHandler postHandler;
 	PutRouteHandler putHandler;
@@ -111,6 +112,7 @@ class PrismApplication
 	private RoutePattern[] routes;
 	private WebSocketRoute[] wsRoutes;
 	private StaticMount[] staticMounts;
+	private string[string] mimeTypeCache;
 
 	/** 
 	* Instantiate a new application.
@@ -124,6 +126,7 @@ class PrismApplication
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
 		server.listen(1000);
+		populateMimeTypeCache();
 	}
 
 	/**
@@ -144,6 +147,24 @@ class PrismApplication
 			onBinary,
 			onClose
 		);
+	}
+
+	private void populateMimeTypeCache()
+	{
+		mimeTypeCache[".html"] = "text/html";
+		mimeTypeCache[".htm"] = "text/html";
+		mimeTypeCache[".css"] = "text/css";
+		mimeTypeCache[".js"] = "application/javascript";
+		mimeTypeCache[".json"] = "application/json";
+		mimeTypeCache[".png"] = "image/png";
+		mimeTypeCache[".jpg"] = "image/jpeg";
+		mimeTypeCache[".jpeg"] = "image/jpeg";
+		mimeTypeCache[".gif"] = "image/gif";
+		mimeTypeCache[".svg"] = "image/svg+xml";
+		mimeTypeCache[".ico"] = "image/x-icon";
+		mimeTypeCache[".pdf"] = "application/pdf";
+		mimeTypeCache[".txt"] = "text/plain";
+		mimeTypeCache[".xml"] = "application/xml";
 	}
 
 	/**
@@ -294,11 +315,9 @@ class PrismApplication
 		routes ~= RoutePattern(
 			pattern.pattern,
 			pattern.paramNames,
+			pattern.compiledRegex,
 			handler,
-			null,
-			null,
-			null,
-			null,
+			null, null, null, null,
 			"GET"
 		);
 	}
@@ -316,11 +335,10 @@ class PrismApplication
 		routes ~= RoutePattern(
 			pattern.pattern,
 			pattern.paramNames,
+			pattern.compiledRegex,
 			null,
 			handler,
-			null,
-			null,
-			null,
+			null, null, null,
 			"POST"
 		);
 	}
@@ -342,8 +360,9 @@ class PrismApplication
 		}
 
 		pattern = "^" ~ pattern ~ "$";
+		auto compiledRegex = regex(pattern);
 
-		return tuple!("pattern", "paramNames")(pattern, paramNames);
+		return tuple!("pattern", "paramNames", "compiledRegex")(pattern, paramNames, compiledRegex);
 	}
 
 	/** 
@@ -351,33 +370,13 @@ class PrismApplication
 	 */
 	private string getMimeType(string filePath)
 	{
-		auto ext = filePath.toLower();
-		if (ext.endsWith(".html") || ext.endsWith(".htm"))
-			return "text/html";
-		else if (ext.endsWith(".css"))
-			return "text/css";
-		else if (ext.endsWith(".js"))
-			return "application/javascript";
-		else if (ext.endsWith(".json"))
-			return "application/json";
-		else if (ext.endsWith(".png"))
-			return "image/png";
-		else if (ext.endsWith(".jpg") || ext.endsWith(".jpeg"))
-			return "image/jpeg";
-		else if (ext.endsWith(".gif"))
-			return "image/gif";
-		else if (ext.endsWith(".svg"))
-			return "image/svg+xml";
-		else if (ext.endsWith(".ico"))
-			return "image/x-icon";
-		else if (ext.endsWith(".pdf"))
-			return "application/pdf";
-		else if (ext.endsWith(".txt"))
-			return "text/plain";
-		else if (ext.endsWith(".xml"))
-			return "application/xml";
-		else
+		auto dotIndex = filePath.lastIndexOf('.');
+		if (dotIndex == -1)
 			return "application/octet-stream";
+		auto ext = filePath[dotIndex .. $].toLower();
+		if (auto mimeType = ext in mimeTypeCache)
+			return *mimeType;
+		return "application/octet-stream";
 	}
 
 	/** 
@@ -754,16 +753,31 @@ class PrismApplication
 	void put(string path, PutRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
-		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, handler, null, null, "PUT");
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			pattern.compiledRegex,
+			null, null,
+			handler,
+			null, null,
+			"PUT"
+		);
 	}
-
 	/** 
 	 * Register PATCH path.
 	 */
 	void patch(string path, PatchRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
-		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, null, handler, null, "PATCH");
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			pattern.compiledRegex,
+			null, null, null,
+			handler,
+			null,
+			"PATCH"
+		);
 	}
 
 	/** 
@@ -772,7 +786,14 @@ class PrismApplication
 	void del(string path, DeleteRouteHandler handler)
 	{
 		auto pattern = parseRoutePattern(path);
-		routes ~= RoutePattern(pattern.pattern, pattern.paramNames, null, null, null, null, handler, "DELETE");
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			pattern.compiledRegex,
+			null, null, null, null,
+			handler,
+			"DELETE"
+		);
 	}
 
 	/** 
