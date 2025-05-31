@@ -813,9 +813,8 @@ class PrismApplication
 					queryParams[key] = value;
 				}
 				else
-				{
 					queryParams[param] = "";
-				}
+
 			}
 		}
 
