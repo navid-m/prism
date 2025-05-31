@@ -4,6 +4,7 @@ import std;
 import prism.ws;
 import core.thread;
 import core.sync.mutex;
+import core.sync.condition;
 
 /** 
  * Response type enumeration
@@ -110,14 +111,16 @@ struct StaticMount
 class ThreadPool
 {
 	private Thread[] workers;
-	private shared bool running = true;
 	private Socket[] taskQueue;
 	private Mutex queueMutex;
 	private void delegate(Socket) taskHandler;
+	private Condition queueCondition;
+	private shared bool running = true;
 
 	this(size_t numThreads, void delegate(Socket) handler)
 	{
 		queueMutex = new Mutex();
+		queueCondition = new Condition(queueMutex);
 		taskHandler = handler;
 
 		for (size_t i = 0; i < numThreads; i++)
@@ -132,6 +135,7 @@ class ThreadPool
 		synchronized (queueMutex)
 		{
 			taskQueue ~= client;
+			queueCondition.notify();
 		}
 	}
 
@@ -143,6 +147,9 @@ class ThreadPool
 
 			synchronized (queueMutex)
 			{
+				while (taskQueue.length == 0 && running)
+					queueCondition.wait();
+
 				if (taskQueue.length > 0)
 				{
 					client = taskQueue[0];
@@ -158,23 +165,8 @@ class ThreadPool
 				}
 				catch (Exception e)
 				{
-					writeln("Error handling client: ", e.msg);
 				}
-
 			}
-			else
-			{
-				Thread.sleep(dur!"msecs"(1));
-			}
-		}
-	}
-
-	void shutdown()
-	{
-		running = false;
-		foreach (worker; workers)
-		{
-			worker.join();
 		}
 	}
 }
@@ -639,7 +631,6 @@ class PrismApplication
 		scope (exit)
 		{
 			running = false;
-			threadPool.shutdown();
 			server.close();
 		}
 
