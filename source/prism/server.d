@@ -203,10 +203,12 @@ class PrismApplication
 	{
 		server = new TcpSocket();
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.TCP_NODELAY, true);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVBUF, 65_536);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDBUF, 65_536);
 		server.bind(new InternetAddress(port));
-		server.listen(1000);
+		server.listen(2048);
 		populateMimeTypeCache();
-
 		threadPool = new ThreadPool(numThreads, &handleClient);
 	}
 
@@ -658,7 +660,7 @@ class PrismApplication
 	private void handleClient(Socket client)
 	{
 		bool isWebSocket = false;
-		ubyte[16_384] buffer;
+		ubyte[8192] buffer;
 
 		try
 		{
