@@ -324,9 +324,10 @@ class PrismApplication
 			"POST"
 		);
 	}
+
 	/** 
-	* Parse route pattern to extract parameter names
-	*/
+     * Parse route pattern to extract parameter names.
+	 */
 	private auto parseRoutePattern(string path)
 	{
 		string[] paramNames;
@@ -346,8 +347,8 @@ class PrismApplication
 	}
 
 	/** 
-	* Get MIME type based on file extension
-	*/
+	 * Get MIME type based on file extension.
+	 */
 	private string getMimeType(string filePath)
 	{
 		auto ext = filePath.toLower();
@@ -380,8 +381,8 @@ class PrismApplication
 	}
 
 	/** 
-	* Try to serve a static file
-	*/
+	 * Try to serve a static file
+	 */
 	private Response tryServeStatic(string requestPath)
 	{
 		foreach (mount; staticMounts)
@@ -454,8 +455,8 @@ class PrismApplication
 	}
 
 	/** 
-	* Generate HTML directory listing
-	*/
+	 * Generate HTML directory listing
+	 */
 	private string generateDirectoryListing(string dirPath, string urlPath)
 	{
 		auto entries = dirEntries(dirPath, SpanMode.shallow);
