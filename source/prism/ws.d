@@ -94,10 +94,7 @@ class WebSocketConnection
     /**
 	 * Check if connection is open
 	 */
-    bool isConnectionOpen()
-    {
-        return isOpen;
-    }
+    bool isConnectionOpen() => isOpen;
 
     /**
 	 * Send WebSocket frame
