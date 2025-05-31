@@ -575,51 +575,30 @@ class PrismApplication
 		return html;
 	}
 
+	private immutable string[int] statusMessages = [
+		200: "OK",
+		201: "Created",
+		204: "No Content",
+		301: "Moved Permanently",
+		302: "Found",
+		303: "See Other",
+		304: "Not Modified",
+		307: "Temporary Redirect",
+		308: "Permanent Redirect",
+		400: "Bad Request",
+		401: "Unauthorized",
+		403: "Forbidden",
+		404: "Not Found",
+		405: "Method Not Allowed",
+		500: "Internal Server Error",
+		502: "Bad Gateway",
+		503: "Service Unavailable",
+	];
+
 	/**
-	 * Get HTTP status message for status code
+	 * Get HTTP status message for status code.
 	 */
-	private string getStatusMessage(int statusCode)
-	{
-		switch (statusCode)
-		{
-		case 200:
-			return "OK";
-		case 201:
-			return "Created";
-		case 204:
-			return "No Content";
-		case 301:
-			return "Moved Permanently";
-		case 302:
-			return "Found";
-		case 303:
-			return "See Other";
-		case 304:
-			return "Not Modified";
-		case 307:
-			return "Temporary Redirect";
-		case 308:
-			return "Permanent Redirect";
-		case 400:
-			return "Bad Request";
-		case 401:
-			return "Unauthorized";
-		case 403:
-			return "Forbidden";
-		case 404:
-			return "Not Found";
-		case 405:
-			return "Method Not Allowed";
-		case 500:
-			return "Internal Server Error";
-		case 502:
-			return "Bad Gateway";
-		case 503:
-			return "Service Unavailable";
-		default:
-			return "Unknown";
-		}
-	}
+	private string getStatusMessage(int statusCode) => statusMessages.get(statusCode, "Unknown");
 
 	/** 
 	* Run the application.
