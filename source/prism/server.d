@@ -778,6 +778,7 @@ class PrismApplication
 						: "Connection: close\r\n\r\n");
 
 				client.send(cast(ubyte[]) responseHeader);
+
 				if (response.content.length > 0)
 					client.send(response.content);
 			}
@@ -795,8 +796,8 @@ class PrismApplication
 	{
 		string[string] queryParams;
 		string path = fullPath;
-
 		auto queryIndex = fullPath.indexOf("?");
+
 		if (queryIndex != -1)
 		{
 			path = fullPath[0 .. queryIndex];
