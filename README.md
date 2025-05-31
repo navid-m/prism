@@ -10,6 +10,15 @@ app.post("/submit", (context) => json(`{"received": true}`));
 app.run();
 ```
 
+## Features
+
+-  Fluent and intuitive URL routing
+-  WebSocket support
+-  Static file serving middleware
+-  Full support for HTTP methods: GET, POST, PUT, PATCH, DELETE
+-  Automatic handling of all MIME types
+-  Built-in view templating
+
 ## Route Parameters
 
 Supports routes like:
@@ -36,6 +45,7 @@ app.get("/search", (context) {
 html("<h1>HTML</h1>");
 json(`{"key": "value"}`);
 text("Plain text");
+blob([0x42, 0x69, 0x6E, 0x61, 0x72, 0x79]);
 ```
 
 ---
