@@ -460,7 +460,7 @@ class PrismApplication
 	}
 
 	/** 
-	 * Try to serve a static file
+	 * Try to serve a static file.
 	 */
 	private Response tryServeStatic(string requestPath)
 	{
@@ -536,7 +536,7 @@ class PrismApplication
 	}
 
 	/** 
-	 * Generate HTML directory listing
+	 * Generate HTML directory listing.
 	 */
 	private string generateDirectoryListing(string dirPath, string urlPath)
 	{
@@ -604,8 +604,8 @@ class PrismApplication
 	private string getStatusMessage(int statusCode) => statusMessages.get(statusCode, "Unknown");
 
 	/** 
-	* Run the application.
-	*/
+	 * Run the application.
+	 */
 	void run()
 	{
 		writeln("Go to http://localhost:8080");
@@ -632,6 +632,9 @@ class PrismApplication
 		}
 	}
 
+	/** 
+	 * Handle some client.
+	 */
 	private void handleClient(Socket client)
 	{
 		bool isWebSocket = false;
