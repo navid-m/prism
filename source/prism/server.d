@@ -2,6 +2,7 @@ module prism.server;
 
 import std;
 import prism.ws;
+import core.thread;
 
 /** 
  * Response type enumeration
@@ -187,7 +188,12 @@ class PrismApplication
 		client.send(cast(ubyte[]) response);
 
 		auto wsConn = new WebSocketConnection(client);
-		handleWebSocketConnection(wsConn, *matchedRoute, context);
+
+		auto wsThread = new Thread({
+			handleWebSocketConnection(wsConn, *matchedRoute, context);
+		});
+		wsThread.start();
+
 		return true;
 	}
 

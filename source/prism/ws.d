@@ -39,6 +39,7 @@ class WebSocketConnection
     this(Socket socket)
     {
         this.socket = socket;
+        this.socket.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
     }
 
     /**
