@@ -17,7 +17,6 @@ app.run();
 -  Static file serving middleware
 -  Full support for HTTP methods: GET, POST, PUT, PATCH, DELETE
 -  Automatic handling of all MIME types
--  Built-in view templating
 
 ## Route Parameters
 
