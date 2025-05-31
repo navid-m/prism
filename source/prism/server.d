@@ -202,12 +202,14 @@ class PrismApplication
 	this(ushort port = 8080, size_t numThreads = 8)
 	{
 		server = new TcpSocket();
+
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.TCP_NODELAY, true);
-		server.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVBUF, 65_536);
-		server.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDBUF, 65_536);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVBUF, 262_144);
+		server.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDBUF, 262_144);
 		server.bind(new InternetAddress(port));
 		server.listen(2048);
+
 		populateMimeTypeCache();
 		threadPool = new ThreadPool(numThreads, &handleClient);
 	}
