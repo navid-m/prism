@@ -251,6 +251,7 @@ class PrismApplication
 		}
 		catch (Exception e)
 		{
+			writeln("Problem here: ", e.msg);
 		}
 		finally
 		{
@@ -512,8 +513,11 @@ class PrismApplication
 
 			void handleClient(Socket client)
 			{
-				scope (exit)
-					client.close();
+				// Currently causes WS issue, but will leak memory if left commented out.
+				// Looking for fix.
+
+				// scope (exit)
+				// 	client.close();
 
 				while (true)
 				{
