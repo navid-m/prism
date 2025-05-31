@@ -1,6 +1,7 @@
 module prism.server;
 
 import std;
+import prism.ws;
 
 /** 
  * Response type enumeration
@@ -54,6 +55,23 @@ alias PostRouteHandler = Response delegate(RequestContext context);
 alias PutRouteHandler = Response delegate(RequestContext context);
 alias PatchRouteHandler = Response delegate(RequestContext context);
 alias DeleteRouteHandler = Response delegate(RequestContext context);
+alias WebSocketConnectHandler = void delegate(WebSocketConnection conn);
+alias WebSocketMessageHandler = void delegate(WebSocketConnection conn, string message);
+alias WebSocketBinaryHandler = void delegate(WebSocketConnection conn, ubyte[] data);
+alias WebSocketCloseHandler = void delegate(WebSocketConnection conn);
+
+/**
+ * WebSocket route structure
+ */
+struct WebSocketRoute
+{
+	string pattern;
+	string[] paramNames;
+	WebSocketConnectHandler onConnect;
+	WebSocketMessageHandler onMessage;
+	WebSocketBinaryHandler onBinary;
+	WebSocketCloseHandler onClose;
+}
 
 /** 
  * Route pattern structure to handle parameterized routes
@@ -87,6 +105,7 @@ class PrismApplication
 {
 	private TcpSocket server;
 	private RoutePattern[] routes;
+	private WebSocketRoute[] wsRoutes;
 	private StaticMount[] staticMounts;
 
 	/** 
@@ -101,6 +120,137 @@ class PrismApplication
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
 		server.listen(1000);
+	}
+
+	/**
+	 * Register WebSocket route
+	 */
+	void websocket(string path,
+		WebSocketConnectHandler onConnect = null,
+		WebSocketMessageHandler onMessage = null,
+		WebSocketBinaryHandler onBinary = null,
+		WebSocketCloseHandler onClose = null)
+	{
+		auto pattern = parseRoutePattern(path);
+		wsRoutes ~= WebSocketRoute(
+			pattern.pattern,
+			pattern.paramNames,
+			onConnect,
+			onMessage,
+			onBinary,
+			onClose
+		);
+	}
+
+	/**
+	 * Handle WebSocket upgrade
+	 */
+	private bool handleWebSocketUpgrade(Socket client, string request, string path)
+	{
+		if (!request.toLower().canFind("upgrade: websocket"))
+			return false;
+
+		WebSocketRoute* matchedRoute = null;
+		RequestContext context;
+
+		foreach (ref route; wsRoutes)
+		{
+			auto routeRegex = regex(route.pattern);
+			auto match = matchFirst(path, routeRegex);
+
+			if (match)
+			{
+				matchedRoute = &route;
+				for (size_t i = 0; i < route.paramNames.length && i + 1 < match.length;
+					i++)
+				{
+					context.params[route.paramNames[i]] = match[i + 1];
+				}
+				break;
+			}
+		}
+
+		if (!matchedRoute)
+			return false;
+
+		auto keyMatch = request.matchFirst(regex(r"Sec-WebSocket-Key:\s*([^\r\n]+)"));
+		if (!keyMatch)
+			return false;
+
+		string wsKey = keyMatch[1].strip();
+		string acceptKey = generateWebSocketAcceptKey(wsKey);
+		string response = "HTTP/1.1 101 Switching Protocols\r\n" ~
+			"Upgrade: websocket\r\n" ~
+			"Connection: Upgrade\r\n" ~
+			"Sec-WebSocket-Accept: " ~ acceptKey ~ "\r\n\r\n";
+
+		client.send(cast(ubyte[]) response);
+
+		auto wsConn = new WebSocketConnection(client);
+		handleWebSocketConnection(wsConn, *matchedRoute, context);
+		return true;
+	}
+
+	/**
+	 * Generate WebSocket accept key
+	 */
+	private string generateWebSocketAcceptKey(string key)
+	{
+		import std.digest.sha : sha1Of;
+
+		return Base64.encode(sha1Of(key ~ "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")).idup;
+	}
+
+	/**
+	 * Handle WebSocket connection lifecycle
+	 */
+	private void handleWebSocketConnection(WebSocketConnection conn, WebSocketRoute route, RequestContext context)
+	{
+		if (route.onConnect)
+			route.onConnect(conn);
+
+		try
+		{
+			while (conn.isConnectionOpen())
+			{
+				auto frame = conn.receiveFrame();
+
+				switch (frame.opcode)
+				{
+				case WebSocketOpcode.TEXT:
+					if (route.onMessage)
+						route.onMessage(conn, cast(string) frame.payload);
+					break;
+
+				case WebSocketOpcode.BINARY:
+					if (route.onBinary)
+						route.onBinary(conn, frame.payload);
+					break;
+
+				case WebSocketOpcode.PING:
+					conn.pong(frame.payload);
+					break;
+
+				case WebSocketOpcode.PONG:
+					break;
+
+				case WebSocketOpcode.CLOSE:
+					conn.close();
+					break;
+
+				default:
+					break;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+		}
+		finally
+		{
+			if (route.onClose)
+				route.onClose(conn);
+		}
 	}
 
 	/** 
@@ -354,7 +504,7 @@ class PrismApplication
 			auto client = server.accept();
 
 			client.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
-			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(5));
+			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(30));
 
 			void handleClient(Socket client)
 			{
@@ -388,6 +538,9 @@ class PrismApplication
 					context.body = requestBody;
 					context.path = pathAndQuery.path;
 					context.method = method;
+
+					if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
+						return;
 
 					Response response;
 
