@@ -582,7 +582,8 @@ class PrismApplication
 				}
 			}
 
-			handleClient(client);
+			auto clientThread = new Thread({ handleClient(client); });
+			clientThread.start();
 		}
 	}
 
