@@ -165,9 +165,7 @@ class WebSocketConnection
         }
 
         if (frame.masked)
-        {
             enforce(socket.receive(frame.maskingKey) == 4, "Failed to read masking key");
-        }
 
         if (frame.payloadLength > 0)
         {
