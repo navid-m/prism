@@ -9,7 +9,7 @@ enum ResponseType
 {
 	HTML,
 	JSON,
-	TEXT,
+	PLAINTEXT,
 	BLOB
 }
 
@@ -269,7 +269,7 @@ class PrismApplication
 		{
 		case ResponseType.JSON:
 			return "application/json";
-		case ResponseType.TEXT:
+		case ResponseType.PLAINTEXT:
 			return "text/plain";
 		case ResponseType.BLOB:
 			return "application/octet-stream";
@@ -381,7 +381,7 @@ class PrismApplication
 
 Response html(string content) => Response(content, ResponseType.HTML);
 Response json(string content) => Response(content, ResponseType.JSON);
-Response text(string content) => Response(content, ResponseType.TEXT);
+Response text(string content) => Response(content, ResponseType.PLAINTEXT);
 Response blob(ubyte[] content) => Response(content, ResponseType.BLOB);
 Response blob(string content) => Response(cast(ubyte[]) content, ResponseType.BLOB);
 
