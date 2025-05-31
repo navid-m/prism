@@ -226,6 +226,9 @@ class PrismApplication
 		);
 	}
 
+	/** 
+	 * Populate the MIME type cache.
+	 */
 	private void populateMimeTypeCache()
 	{
 		mimeTypeCache[".html"] = "text/html";
