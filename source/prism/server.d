@@ -102,7 +102,7 @@ struct StaticMount
 /** 
  * The application itself.
  */
-class PrismApplication
+class Prism
 {
 	private TcpSocket server;
 	private RoutePattern[] routes;
@@ -747,7 +747,7 @@ Response blob(string content) => Response(cast(ubyte[]) content, ResponseType.BL
 
 unittest
 {
-	auto app = new PrismApplication();
+	auto app = new Prism();
 
 	app.useStatic("/static", "./public");
 	app.useStatic("/assets", "./assets", true);
