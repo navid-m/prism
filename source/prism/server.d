@@ -9,7 +9,8 @@ enum ResponseType
 {
 	HTML,
 	JSON,
-	TEXT
+	TEXT,
+	BLOB
 }
 
 /** 
@@ -17,13 +18,18 @@ enum ResponseType
  */
 struct Response
 {
-	string content;
+	ubyte[] content;
 	ResponseType type;
 
-	this(string content, ResponseType type = ResponseType.HTML)
+	this(ubyte[] content, ResponseType type = ResponseType.HTML)
 	{
 		this.content = content;
 		this.type = type;
+	}
+
+	this(string content, ResponseType type = ResponseType.HTML)
+	{
+		this(cast(ubyte[]) content, type);
 	}
 }
 
@@ -209,8 +215,9 @@ class PrismApplication
 								: "Connection: close\r\n\r\n"
 						);
 
-					client.send(
-						cast(ubyte[])(responseHeader ~ response.content));
+					client.send(cast(ubyte[]) responseHeader);
+					client.send(response.content);
+
 					if (!keepAlive)
 						break;
 				}
@@ -264,6 +271,8 @@ class PrismApplication
 			return "application/json";
 		case ResponseType.TEXT:
 			return "text/plain";
+		case ResponseType.BLOB:
+			return "application/octet-stream";
 		case ResponseType.HTML:
 		default:
 			return "text/html";
@@ -373,6 +382,8 @@ class PrismApplication
 Response html(string content) => Response(content, ResponseType.HTML);
 Response json(string content) => Response(content, ResponseType.JSON);
 Response text(string content) => Response(content, ResponseType.TEXT);
+Response blob(ubyte[] content) => Response(content, ResponseType.BLOB);
+Response blob(string content) => Response(cast(ubyte[]) content, ResponseType.BLOB);
 
 unittest
 {
@@ -428,6 +439,10 @@ unittest
 	app.del("/api/users/:id", (context) {
 		auto userId = context.params.get("id", "unknown");
 		return json(`{"status": "success", "message": "User ` ~ userId ~ ` deleted"}`);
+	});
+	app.get("/download", (context) {
+		auto fileContent = cast(ubyte[]) "This is binary data";
+		return blob(fileContent);
 	});
 
 	app.run();
