@@ -754,8 +754,203 @@ unittest
 				<p><a href="/static/">Static Files</a></p>
 				<p><a href="/assets/">Assets (with listing)</a></p>
 				<p><a href="/downloads/">Downloads</a></p>
+				<p><a href="/chat">WebSocket Chat Room</a></p>
 			</body></html>`)
 	);
+
+	app.get("/chat", (context) => html(
+			`<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Prism Chat Room</title>
+			<style>
+				body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+				.chat-messages { height: 400px; overflow-y: auto; padding: 20px; border-bottom: 1px solid #eee; }
+				.message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+				.message.own { background: #007bff; color: white; text-align: right; }
+				.message.other { background: #e9ecef; }
+				.message .username { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
+				.message .text { margin: 0; }
+				.chat-input { padding: 20px; display: flex; gap: 10px; }
+				.chat-input button:hover { background: #0056b3; }
+				.username-input { padding: 20px; background: #f8f9fa; border-radius: 0 0 8px 8px; }
+			</style>
+		</head>
+		<body>
+			<div class="chat-container">
+				<div class="chat-header">
+					<h1>Prism WebSocket Chat Room</h1>
+				</div>
+				
+				<div id="usernameSection" class="username-input">
+					<label>Enter your username: </label>
+					<input type="text" id="usernameInput" placeholder="Your username" maxlength="20">
+					<button onclick="setUsername()">Join Chat</button>
+				</div>
+				
+				<div id="chatSection" style="display: none;">
+					<div id="messages" class="chat-messages"></div>
+					<div class="chat-input">
+						<input type="text" id="messageInput" placeholder="Type your message..." maxlength="500">
+						<button onclick="sendMessage()">Send</button>
+					</div>
+					<div id="status" class="status">Disconnected</div>
+				</div>
+			</div>
+
+			<script>
+				let ws = null;
+				let username = '';
+				let isConnected = false;
+
+				function setUsername() {
+					const input = document.getElementById('usernameInput');
+					const name = input.value.trim();
+					
+					if (name.length < 2) {
+						alert('Username must be at least 2 characters long');
+						return;
+					}
+					
+					username = name;
+					document.getElementById('usernameSection').style.display = 'none';
+					document.getElementById('chatSection').style.display = 'block';
+					connectWebSocket();
+				}
+
+				function connectWebSocket() {
+					const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+					const wsUrl = protocol + '//' + window.location.host + '/ws/chat';
+					
+					ws = new WebSocket(wsUrl);
+					
+					ws.onopen = function() {
+						isConnected = true;
+						updateStatus('Connected as ' + username);
+						
+						ws.send(JSON.stringify({
+							type: 'join',
+							username: username,
+							message: username + ' joined the chat'
+						}));
+					};
+					
+					ws.onmessage = function(event) {
+						try {
+							const data = JSON.parse(event.data);
+							addMessage(data.username, data.message, data.username === username);
+						} catch (e) {
+							console.error('Failed to parse message:', e);
+						}
+					};
+					
+					ws.onclose = function() {
+						isConnected = false;
+						updateStatus('Disconnected - trying to reconnect...');
+						setTimeout(connectWebSocket, 3000);
+					};
+					
+					ws.onerror = function(error) {
+						console.error('WebSocket error:', error);
+						updateStatus('Connection error');
+					};
+				}
+
+				function sendMessage() {
+					const input = document.getElementById('messageInput');
+					const message = input.value.trim();
+					
+					if (!message || !isConnected) return;
+					
+					ws.send(JSON.stringify({
+						type: 'message',
+						username: username,
+						message: message
+					}));
+					
+					input.value = '';
+				}
+
+				function addMessage(user, text, isOwn) {
+					const messagesDiv = document.getElementById('messages');
+					const messageDiv = document.createElement('div');
+					messageDiv.className = 'message ' + (isOwn ? 'own' : 'other');
+					
+					messageDiv.innerHTML = 
+						'<div class="username">' + escapeHtml(user) + ':</div>' +
+						'<div class="text">' + escapeHtml(text) + '</div>';
+					
+					messagesDiv.appendChild(messageDiv);
+					messagesDiv.scrollTop = messagesDiv.scrollHeight;
+				}
+
+				function updateStatus(status) {
+					document.getElementById('status').textContent = status;
+				}
+
+				function escapeHtml(text) {
+					const div = document.createElement('div');
+					div.textContent = text;
+					return div.innerHTML;
+				}
+
+				document.getElementById('messageInput').addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						sendMessage();
+					}
+				});
+				document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+					if (e.key === 'Enter') {
+						setUsername();
+					}
+				});
+			</script>
+		</body>
+		</html>`
+	));
+
+	WebSocketConnection[] chatConnections;
+
+	app.websocket("/ws/chat",
+		(WebSocketConnection conn) {
+		chatConnections ~= conn;
+		writeln("Client connected to chat. Total connections: ", chatConnections.length);
+	},
+		(WebSocketConnection conn, string message) {
+		writeln("Received chat message: ", message);
+		foreach (client; chatConnections)
+		{
+			if (client.isConnectionOpen())
+			{
+				try
+				{
+					client.sendText(message);
+				}
+				catch (Exception e)
+				{
+					writeln("Failed to send message to client: ", e.msg);
+				}
+			}
+		}
+
+		import std.algorithm : filter;
+		import std.array : array;
+
+		chatConnections = chatConnections.filter!(c => c.isConnectionOpen()).array;
+	},
+		(WebSocketConnection conn, ubyte[] data) {
+		writeln("Received binary data in chat: ", data.length, " bytes");
+	},
+		(WebSocketConnection conn) {
+		writeln("Chat client disconnected");
+		import std.algorithm : filter;
+		import std.array : array;
+
+		chatConnections = chatConnections.filter!(c => c !is conn).array;
+		writeln("Total connections: ", chatConnections.length);
+	}
+	);
+
 	app.get("/about", (context) => html("<html><body><h1>About Page</h1></body></html>"));
 	app.get("/users/:id", (context) {
 		auto userId = context.params.get("id", "unknown");
