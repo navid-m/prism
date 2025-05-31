@@ -572,7 +572,7 @@ class PrismApplication
 
 				while (true)
 				{
-					ubyte[4096] buffer;
+					ubyte[16_384] buffer;
 					size_t totalRead = 0;
 
 					while (true)
