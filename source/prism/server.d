@@ -3,6 +3,7 @@ module prism.server;
 import std;
 import prism.ws;
 import core.thread;
+import core.sync.mutex;
 
 /** 
  * Response type enumeration
@@ -103,6 +104,81 @@ struct StaticMount
 	bool listDirectories = false;
 }
 
+/**
+ * Thread pool for handling connections
+ */
+class ThreadPool
+{
+	private Thread[] workers;
+	private shared bool running = true;
+	private Socket[] taskQueue;
+	private Mutex queueMutex;
+	private void delegate(Socket) taskHandler;
+
+	this(size_t numThreads, void delegate(Socket) handler)
+	{
+		queueMutex = new Mutex();
+		taskHandler = handler;
+
+		for (size_t i = 0; i < numThreads; i++)
+		{
+			workers ~= new Thread(&workerLoop);
+			workers[$ - 1].start();
+		}
+	}
+
+	void addTask(Socket client)
+	{
+		synchronized (queueMutex)
+		{
+			taskQueue ~= client;
+		}
+	}
+
+	private void workerLoop()
+	{
+		while (running)
+		{
+			Socket client = null;
+
+			synchronized (queueMutex)
+			{
+				if (taskQueue.length > 0)
+				{
+					client = taskQueue[0];
+					taskQueue = taskQueue[1 .. $];
+				}
+			}
+
+			if (client !is null)
+			{
+				try
+				{
+					taskHandler(client);
+				}
+				catch (Exception e)
+				{
+					writeln("Error handling client: ", e.msg);
+				}
+
+			}
+			else
+			{
+				Thread.sleep(dur!"msecs"(1));
+			}
+		}
+	}
+
+	void shutdown()
+	{
+		running = false;
+		foreach (worker; workers)
+		{
+			worker.join();
+		}
+	}
+}
+
 /** 
  * The application itself.
  */
@@ -113,20 +189,25 @@ class PrismApplication
 	private WebSocketRoute[] wsRoutes;
 	private StaticMount[] staticMounts;
 	private string[string] mimeTypeCache;
+	private ThreadPool threadPool;
+	private shared bool running = true;
 
 	/** 
 	* Instantiate a new application.
 	*
 	* Params:
 	*   port = Port to operate on
+	*   numThreads = Number of worker threads (default: 8)
 	*/
-	this(ushort port = 8080)
+	this(ushort port = 8080, size_t numThreads = 8)
 	{
 		server = new TcpSocket();
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
 		server.listen(1000);
 		populateMimeTypeCache();
+
+		threadPool = new ThreadPool(numThreads, &handleClient);
 	}
 
 	/**
@@ -275,7 +356,7 @@ class PrismApplication
 		}
 		catch (Exception e)
 		{
-			writeln("Problem here: ", e.msg);
+			writeln("WebSocket error: ", e.msg);
 		}
 		finally
 		{
@@ -390,14 +471,16 @@ class PrismApplication
 				continue;
 
 			string relativePath = requestPath[mount.mountPath.length .. $];
+
 			if (relativePath.startsWith("/"))
 				relativePath = relativePath[1 .. $];
 
 			string fullPath = buildPath(mount.rootPath, relativePath);
 			string normalizedPath = buildNormalizedPath(fullPath);
 			string normalizedRoot = buildNormalizedPath(mount.rootPath);
+
 			if (!normalizedPath.startsWith(normalizedRoot))
-				return Response("403 Forbidden", ResponseType.PLAINTEXT);
+				return Response("403 Forbidden", ResponseType.PLAINTEXT, 403);
 
 			if (!exists(fullPath))
 				continue;
@@ -415,7 +498,7 @@ class PrismApplication
 						return response;
 					}
 					catch (Exception e)
-						return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+						return Response("500 Internal Server Error", ResponseType.PLAINTEXT, 500);
 				}
 				else if (mount.listDirectories)
 				{
@@ -427,11 +510,11 @@ class PrismApplication
 						return response;
 					}
 					catch (Exception e)
-						return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+						return Response("500 Internal Server Error", ResponseType.PLAINTEXT, 500);
 				}
 				else
 				{
-					return Response("403 Forbidden", ResponseType.PLAINTEXT);
+					return Response("403 Forbidden", ResponseType.PLAINTEXT, 403);
 				}
 			}
 			else if (isFile(fullPath))
@@ -446,11 +529,11 @@ class PrismApplication
 				}
 				catch (Exception e)
 				{
-					return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+					return Response("500 Internal Server Error", ResponseType.PLAINTEXT, 500);
 				}
 			}
 		}
-		return Response("", ResponseType.PLAINTEXT);
+		return Response("", ResponseType.PLAINTEXT, 404);
 	}
 
 	/** 
@@ -550,123 +633,156 @@ class PrismApplication
 		writeln("Go to http://localhost:8080");
 
 		scope (exit)
-			server.close();
-
-		while (true)
 		{
-			auto client = server.accept();
+			running = false;
+			threadPool.shutdown();
+			server.close();
+		}
 
-			client.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
-			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(30));
-
-			void handleClient(Socket client)
+		while (running)
+		{
+			try
 			{
-				bool isWebSocket = false;
+				auto client = server.accept();
+				client.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
+				threadPool.addTask(client);
+			}
+			catch (Exception e)
+			{
+				if (running)
+					writeln("Error accepting connection: ", e.msg);
+			}
+		}
+	}
 
-				scope (exit)
+	private void handleClient(Socket client)
+	{
+		bool isWebSocket = false;
+		ubyte[16_384] buffer;
+
+		try
+		{
+			while (true)
+			{
+				size_t totalRead = 0;
+
+				while (totalRead < cast(int) buffer.length - 1)
 				{
-					if (!isWebSocket)
-						client.close();
-				}
-
-				while (true)
-				{
-					ubyte[16_384] buffer;
-					size_t totalRead = 0;
-
-					while (true)
-					{
-						auto bytesRead = client.receive(buffer[totalRead .. $]);
-						if (bytesRead <= 0)
-							return;
-						totalRead += bytesRead;
-						auto chunk = cast(string) buffer[0 .. totalRead];
-						if (chunk.canFind("\r\n\r\n"))
-							break;
-					}
-
-					auto request = cast(string) buffer[0 .. totalRead];
-					auto method = extractMethod(request);
-					auto fullPath = extractPath(request);
-					auto pathAndQuery = parsePathAndQuery(fullPath);
-					auto requestBody = extractBody(request);
-					auto context = RequestContext();
-
-					context.query = pathAndQuery.query;
-					context.body = requestBody;
-					context.path = pathAndQuery.path;
-					context.method = method;
-
-					if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
-					{
-						isWebSocket = true;
+					auto bytesRead = client.receive(buffer[totalRead .. $]);
+					if (bytesRead <= 0)
 						return;
-					}
 
-					Response response;
-
-					response = handleRoute(method, pathAndQuery.path, context);
-
-					if (response.content == cast(ubyte[]) "404 Not Found" && method == "GET")
-					{
-						auto staticResponse = tryServeStatic(pathAndQuery.path);
-						if (staticResponse.content.length > 0)
-							response = staticResponse;
-					}
-
-					bool keepAlive = request.toLower().canFind("connection: keep-alive");
-
-					if (response.type == ResponseType.REDIRECT)
-					{
-						string location = response.headers.get("Location", "/");
-						string statusMessage = getStatusMessage(response.statusCode);
-						string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
-							"Location: " ~ location ~ "\r\n" ~
-							"Content-Length: 0\r\n";
-
-						foreach (key, value; response.headers)
-						{
-							if (key != "Location")
-								responseHeader ~= key ~ ": " ~ value ~ "\r\n";
-						}
-
-						responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
-								: "Connection: close\r\n\r\n");
-
-						client.send(cast(ubyte[]) responseHeader);
-					}
-					else
-					{
-						string contentType = response.headers.get("Content-Type", getContentType(
-								response.type));
-						string statusMessage = getStatusMessage(response.statusCode);
-
-						string responseHeader = "HTTP/1.1 " ~ to!string(
-							response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
-							"Content-Type: " ~ contentType ~ "\r\n" ~
-							"Content-Length: " ~ to!string(
-								response.content.length) ~ "\r\n";
-
-						foreach (key, value; response.headers)
-						{
-							if (key != "Content-Type")
-								responseHeader ~= key ~ ": " ~ value ~ "\r\n";
-						}
-
-						responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
-								: "Connection: close\r\n\r\n");
-
-						client.send(cast(ubyte[]) responseHeader);
-						client.send(response.content);
-					}
-
-					if (!keepAlive)
+					totalRead += bytesRead;
+					auto chunk = cast(string) buffer[0 .. totalRead];
+					if (chunk.canFind("\r\n\r\n"))
 						break;
 				}
-			}
 
-			auto clientThread = new Thread({ handleClient(client); });
-			clientThread.start();
+				if (totalRead == 0)
+					return;
+
+				auto request = cast(string) buffer[0 .. totalRead];
+				auto method = extractMethod(request);
+				auto fullPath = extractPath(request);
+				auto pathAndQuery = parsePathAndQuery(fullPath);
+				auto requestBody = extractBody(request);
+				auto context = RequestContext();
+
+				context.query = pathAndQuery.query;
+				context.body = requestBody;
+				context.path = pathAndQuery.path;
+				context.method = method;
+
+				if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
+				{
+					isWebSocket = true;
+					return;
+				}
+
+				Response response = handleRoute(method, pathAndQuery.path, context);
+
+				if (response.statusCode == 404 && method == "GET")
+				{
+					auto staticResponse = tryServeStatic(pathAndQuery.path);
+					if (staticResponse.statusCode != 404)
+						response = staticResponse;
+				}
+
+				bool keepAlive = request.toLower()
+					.canFind("connection: keep-alive") &&
+					response.statusCode < 400;
+
+				sendResponse(client, response, keepAlive);
+
+				if (!keepAlive)
+					break;
+			}
+		}
+		catch (Exception e)
+		{
+			try
+			{
+				auto errorResponse = Response("500 Internal Server Error", ResponseType.PLAINTEXT, 500);
+				sendResponse(client, errorResponse, false);
+			}
+			catch (Exception)
+			{
+			}
+		}
+	}
+
+	private void sendResponse(Socket client, Response response, bool keepAlive)
+	{
+		try
+		{
+			if (response.type == ResponseType.REDIRECT)
+			{
+				string location = response.headers.get("Location", "/");
+				string statusMessage = getStatusMessage(response.statusCode);
+				string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+					"Location: " ~ location ~ "\r\n" ~
+					"Content-Length: 0\r\n";
+
+				foreach (key, value; response.headers)
+				{
+					if (key != "Location")
+						responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+				}
+
+				responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+						: "Connection: close\r\n\r\n");
+				client.send(cast(ubyte[]) responseHeader);
+			}
+			else
+			{
+				string contentType = response.headers.get("Content-Type", getContentType(
+						response.type
+				));
+				string statusMessage = getStatusMessage(response.statusCode);
+				string responseHeader = "HTTP/1.1 " ~ to!string(
+					response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+					"Content-Type: " ~ contentType ~ "\r\n" ~
+					"Content-Length: " ~ to!string(
+						response.content.length
+					) ~ "\r\n";
+
+				foreach (key, value; response.headers)
+				{
+					if (key != "Content-Type")
+						responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+				}
+
+				responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+						: "Connection: close\r\n\r\n");
+
+				client.send(cast(ubyte[]) responseHeader);
+				if (response.content.length > 0)
+					client.send(response.content);
+			}
+		}
+		catch (Exception e)
+		{
+			writeln("Error sending response: ", e.msg);
 		}
 	}
 
@@ -763,6 +879,7 @@ class PrismApplication
 			"PUT"
 		);
 	}
+
 	/** 
 	 * Register PATCH path.
 	 */
@@ -843,7 +960,6 @@ class PrismApplication
 		}
 		return Response("404 Not Found", ResponseType.PLAINTEXT, 404);
 	}
-
 }
 
 Response html(string content) => Response(content, ResponseType.HTML);
