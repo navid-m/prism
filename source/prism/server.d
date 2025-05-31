@@ -621,7 +621,6 @@ class PrismApplication
 					{
 						string location = response.headers.get("Location", "/");
 						string statusMessage = getStatusMessage(response.statusCode);
-
 						string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
 							"Location: " ~ location ~ "\r\n" ~
 							"Content-Length: 0\r\n";
