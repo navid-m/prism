@@ -440,7 +440,6 @@ class PrismApplication
 				{
 					auto content = cast(ubyte[]) read(fullPath);
 					string mimeType = getMimeType(fullPath);
-
 					auto response = Response(content, ResponseType.BLOB);
 					response.headers["Content-Type"] = mimeType;
 					return response;
