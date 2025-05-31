@@ -248,7 +248,7 @@ class PrismApplication
 	}
 
 	/**
-	 * Handle WebSocket upgrade
+	 * Handle WebSocket upgrade.
 	 */
 	private bool handleWebSocketUpgrade(Socket client, string request, string path)
 	{
@@ -302,7 +302,7 @@ class PrismApplication
 	}
 
 	/**
-	 * Generate WebSocket accept key
+	 * Generate WebSocket accept key.
 	 */
 	private string generateWebSocketAcceptKey(string key)
 	{
@@ -312,7 +312,7 @@ class PrismApplication
 	}
 
 	/**
-	 * Handle WebSocket connection lifecycle
+	 * Handle WebSocket connection lifecycle.
 	 */
 	private void handleWebSocketConnection(WebSocketConnection conn, WebSocketRoute route, RequestContext context)
 	{
