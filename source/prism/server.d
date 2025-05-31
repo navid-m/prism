@@ -12,7 +12,8 @@ enum ResponseType
 	HTML,
 	JSON,
 	PLAINTEXT,
-	BLOB
+	BLOB,
+	REDIRECT
 }
 
 /** 
@@ -23,16 +24,18 @@ struct Response
 	ubyte[] content;
 	ResponseType type;
 	string[string] headers;
+	int statusCode = 200;
 
-	this(ubyte[] content, ResponseType type = ResponseType.HTML)
+	this(ubyte[] content, ResponseType type = ResponseType.HTML, int statusCode = 200)
 	{
 		this.content = content;
 		this.type = type;
+		this.statusCode = statusCode;
 	}
 
-	this(string content, ResponseType type = ResponseType.HTML)
+	this(string content, ResponseType type = ResponseType.HTML, int statusCode = 200)
 	{
-		this(cast(ubyte[]) content, type);
+		this(cast(ubyte[]) content, type, statusCode);
 	}
 }
 
@@ -188,10 +191,10 @@ class PrismApplication
 		client.send(cast(ubyte[]) response);
 
 		auto wsConn = new WebSocketConnection(client);
-
 		auto wsThread = new Thread({
 			handleWebSocketConnection(wsConn, *matchedRoute, context);
 		});
+
 		wsThread.start();
 
 		return true;
@@ -494,6 +497,52 @@ class PrismApplication
 		return html;
 	}
 
+	/**
+	 * Get HTTP status message for status code
+	 */
+	private string getStatusMessage(int statusCode)
+	{
+		switch (statusCode)
+		{
+		case 200:
+			return "OK";
+		case 201:
+			return "Created";
+		case 204:
+			return "No Content";
+		case 301:
+			return "Moved Permanently";
+		case 302:
+			return "Found";
+		case 303:
+			return "See Other";
+		case 304:
+			return "Not Modified";
+		case 307:
+			return "Temporary Redirect";
+		case 308:
+			return "Permanent Redirect";
+		case 400:
+			return "Bad Request";
+		case 401:
+			return "Unauthorized";
+		case 403:
+			return "Forbidden";
+		case 404:
+			return "Not Found";
+		case 405:
+			return "Method Not Allowed";
+		case 500:
+			return "Internal Server Error";
+		case 502:
+			return "Bad Gateway";
+		case 503:
+			return "Service Unavailable";
+		default:
+			return "Unknown";
+		}
+	}
+
 	/** 
 	* Run the application.
 	*/
@@ -567,24 +616,51 @@ class PrismApplication
 					}
 
 					bool keepAlive = request.toLower().canFind("connection: keep-alive");
-					string contentType = response.headers.get("Content-Type", getContentType(
-							response.type));
 
-					string responseHeader = "HTTP/1.1 200 OK\r\n"
-						~ "Content-Type: " ~ contentType ~ "\r\n"
-						~ "Content-Length: " ~ to!string(response.content.length) ~ "\r\n";
-
-					foreach (key, value; response.headers)
+					if (response.type == ResponseType.REDIRECT)
 					{
-						if (key != "Content-Type")
-							responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+						string location = response.headers.get("Location", "/");
+						string statusMessage = getStatusMessage(response.statusCode);
+
+						string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+							"Location: " ~ location ~ "\r\n" ~
+							"Content-Length: 0\r\n";
+
+						foreach (key, value; response.headers)
+						{
+							if (key != "Location")
+								responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+						}
+
+						responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+								: "Connection: close\r\n\r\n");
+
+						client.send(cast(ubyte[]) responseHeader);
 					}
+					else
+					{
+						string contentType = response.headers.get("Content-Type", getContentType(
+								response.type));
+						string statusMessage = getStatusMessage(response.statusCode);
 
-					responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
-							: "Connection: close\r\n\r\n");
+						string responseHeader = "HTTP/1.1 " ~ to!string(
+							response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+							"Content-Type: " ~ contentType ~ "\r\n" ~
+							"Content-Length: " ~ to!string(
+								response.content.length) ~ "\r\n";
 
-					client.send(cast(ubyte[]) responseHeader);
-					client.send(response.content);
+						foreach (key, value; response.headers)
+						{
+							if (key != "Content-Type")
+								responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+						}
+
+						responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+								: "Connection: close\r\n\r\n");
+
+						client.send(cast(ubyte[]) responseHeader);
+						client.send(response.content);
+					}
 
 					if (!keepAlive)
 						break;
@@ -642,6 +718,8 @@ class PrismApplication
 			return "text/plain";
 		case ResponseType.BLOB:
 			return "application/octet-stream";
+		case ResponseType.REDIRECT:
+			return "text/html";
 		case ResponseType.HTML:
 		default:
 			return "text/html";
@@ -743,7 +821,7 @@ class PrismApplication
 				}
 			}
 		}
-		return Response("404 Not Found", ResponseType.PLAINTEXT);
+		return Response("404 Not Found", ResponseType.PLAINTEXT, 404);
 	}
 
 }
@@ -753,6 +831,16 @@ Response json(string content) => Response(content, ResponseType.JSON);
 Response text(string content) => Response(content, ResponseType.PLAINTEXT);
 Response blob(ubyte[] content) => Response(content, ResponseType.BLOB);
 Response blob(string content) => Response(cast(ubyte[]) content, ResponseType.BLOB);
+Response redirect(string location, int statusCode = 302)
+{
+	auto response = Response("", ResponseType.REDIRECT, statusCode);
+	response.headers["Location"] = location;
+	return response;
+}
+
+Response permanentRedirect(string location) => redirect(location, 301);
+Response temporaryRedirect(string location) => redirect(location, 302);
+Response seeOther(string location) => redirect(location, 303);
 
 unittest
 {
