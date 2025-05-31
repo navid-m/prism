@@ -374,7 +374,7 @@ class PrismApplication
 				}
 			}
 		}
-		return Response("<html><body><h1>404 Not Found</h1></body></html>", ResponseType.HTML);
+		return Response("404 Not Found", ResponseType.PLAINTEXT);
 	}
 
 }
