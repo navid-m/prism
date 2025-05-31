@@ -20,6 +20,7 @@ struct Response
 {
 	ubyte[] content;
 	ResponseType type;
+	string[string] headers;
 
 	this(ubyte[] content, ResponseType type = ResponseType.HTML)
 	{
@@ -70,12 +71,23 @@ struct RoutePattern
 }
 
 /** 
+ * Static file mount configuration
+ */
+struct StaticMount
+{
+	string mountPath;
+	string rootPath;
+	bool listDirectories = false;
+}
+
+/** 
  * The application itself.
  */
 class PrismApplication
 {
 	private TcpSocket server;
 	private RoutePattern[] routes;
+	private StaticMount[] staticMounts;
 
 	/** 
 	* Instantiate a new application.
@@ -89,6 +101,24 @@ class PrismApplication
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 		server.bind(new InternetAddress(port));
 		server.listen(1000);
+	}
+
+	/** 
+	* Mount a static file directory at a specific URL path.
+	*
+	* Params:
+	*   mountPath = URL path prefix (e.g., "/static", "/assets")
+	*   rootPath = Filesystem directory path (e.g., "./public", "./assets")
+	*   listDirectories = Whether to allow directory listing (default: false)
+	*/
+	void serveStatic(string mountPath, string rootPath, bool listDirectories = false)
+	{
+		if (!mountPath.startsWith("/"))
+			mountPath = "/" ~ mountPath;
+		if (mountPath.endsWith("/") && mountPath.length > 1)
+			mountPath = mountPath[0 .. $ - 1];
+
+		staticMounts ~= StaticMount(mountPath, rootPath, listDirectories);
 	}
 
 	/** 
@@ -156,6 +186,160 @@ class PrismApplication
 	}
 
 	/** 
+	* Get MIME type based on file extension
+	*/
+	private string getMimeType(string filePath)
+	{
+		auto ext = filePath.toLower();
+		if (ext.endsWith(".html") || ext.endsWith(".htm"))
+			return "text/html";
+		else if (ext.endsWith(".css"))
+			return "text/css";
+		else if (ext.endsWith(".js"))
+			return "application/javascript";
+		else if (ext.endsWith(".json"))
+			return "application/json";
+		else if (ext.endsWith(".png"))
+			return "image/png";
+		else if (ext.endsWith(".jpg") || ext.endsWith(".jpeg"))
+			return "image/jpeg";
+		else if (ext.endsWith(".gif"))
+			return "image/gif";
+		else if (ext.endsWith(".svg"))
+			return "image/svg+xml";
+		else if (ext.endsWith(".ico"))
+			return "image/x-icon";
+		else if (ext.endsWith(".pdf"))
+			return "application/pdf";
+		else if (ext.endsWith(".txt"))
+			return "text/plain";
+		else if (ext.endsWith(".xml"))
+			return "application/xml";
+		else
+			return "application/octet-stream";
+	}
+
+	/** 
+	* Try to serve a static file
+	*/
+	private Response tryServeStatic(string requestPath)
+	{
+		foreach (mount; staticMounts)
+		{
+			if (!requestPath.startsWith(mount.mountPath))
+				continue;
+
+			string relativePath = requestPath[mount.mountPath.length .. $];
+			if (relativePath.startsWith("/"))
+				relativePath = relativePath[1 .. $];
+
+			string fullPath = buildPath(mount.rootPath, relativePath);
+			string normalizedPath = buildNormalizedPath(fullPath);
+			string normalizedRoot = buildNormalizedPath(mount.rootPath);
+			if (!normalizedPath.startsWith(normalizedRoot))
+			{
+				return Response("403 Forbidden", ResponseType.PLAINTEXT);
+			}
+
+			if (!exists(fullPath))
+				continue;
+
+			if (isDir(fullPath))
+			{
+				string indexPath = buildPath(fullPath, "index.html");
+				if (exists(indexPath) && isFile(indexPath))
+				{
+					try
+					{
+						auto content = cast(ubyte[]) read(indexPath);
+						auto response = Response(content, ResponseType.HTML);
+						response.headers["Content-Type"] = "text/html";
+						return response;
+					}
+					catch (Exception e)
+						return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+				}
+				else if (mount.listDirectories)
+				{
+					try
+					{
+						string listing = generateDirectoryListing(fullPath, requestPath);
+						auto response = Response(listing, ResponseType.HTML);
+						response.headers["Content-Type"] = "text/html";
+						return response;
+					}
+					catch (Exception e)
+						return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+				}
+				else
+				{
+					return Response("403 Forbidden", ResponseType.PLAINTEXT);
+				}
+			}
+			else if (isFile(fullPath))
+			{
+				try
+				{
+					auto content = cast(ubyte[]) read(fullPath);
+					string mimeType = getMimeType(fullPath);
+
+					auto response = Response(content, ResponseType.BLOB);
+					response.headers["Content-Type"] = mimeType;
+					return response;
+				}
+				catch (Exception e)
+				{
+					return Response("500 Internal Server Error", ResponseType.PLAINTEXT);
+				}
+			}
+		}
+		return Response("", ResponseType.PLAINTEXT);
+	}
+
+	/** 
+	* Generate HTML directory listing
+	*/
+	private string generateDirectoryListing(string dirPath, string urlPath)
+	{
+		auto entries = dirEntries(dirPath, SpanMode.shallow);
+		string html = "<!DOCTYPE html><html><head><title>Directory: " ~ urlPath ~ "</title>";
+
+		html ~= "<style>body{font-family:Arial,sans-serif;margin:40px;}";
+		html ~= "a{text-decoration:none;color:#0066cc;}a:hover{text-decoration:underline;}";
+		html ~= ".dir{font-weight:bold;}.file{color:#666;}</style></head><body>";
+		html ~= "<h1>Index of " ~ urlPath ~ "</h1><hr><pre>";
+
+		if (urlPath != "/" && urlPath.length > 1)
+		{
+			auto parentPath = urlPath.endsWith("/") ? urlPath[0 .. $ - 1] : urlPath;
+			auto lastSlash = parentPath.lastIndexOf("/");
+			if (lastSlash > 0)
+				parentPath = parentPath[0 .. lastSlash];
+			else
+				parentPath = "/";
+			html ~= "<a href=\"" ~ parentPath ~ "\">../</a>\n";
+		}
+
+		foreach (entry; entries)
+		{
+			string name = baseName(entry.name);
+			string href = urlPath.endsWith("/") ? urlPath ~ name : urlPath ~ "/" ~ name;
+
+			if (entry.isDir)
+			{
+				html ~= "<a href=\"" ~ href ~ "/\" class=\"dir\">" ~ name ~ "/</a>\n";
+			}
+			else
+			{
+				html ~= "<a href=\"" ~ href ~ "\" class=\"file\">" ~ name ~ "</a>\n";
+			}
+		}
+
+		html ~= "</pre><hr></body></html>";
+		return html;
+	}
+
+	/** 
 	* Run the application.
 	*/
 	void run()
@@ -205,15 +389,33 @@ class PrismApplication
 					context.path = pathAndQuery.path;
 					context.method = method;
 
-					auto response = handleRoute(method, pathAndQuery.path, context);
+					Response response;
+
+					response = handleRoute(method, pathAndQuery.path, context);
+
+					if (response.content == cast(ubyte[]) "404 Not Found" && method == "GET")
+					{
+						auto staticResponse = tryServeStatic(pathAndQuery.path);
+						if (staticResponse.content.length > 0)
+							response = staticResponse;
+					}
+
 					bool keepAlive = request.toLower().canFind("connection: keep-alive");
-					string contentType = getContentType(response.type);
+					string contentType = response.headers.get("Content-Type", getContentType(
+							response.type));
+
 					string responseHeader = "HTTP/1.1 200 OK\r\n"
 						~ "Content-Type: " ~ contentType ~ "\r\n"
-						~ "Content-Length: " ~ to!string(response.content.length) ~ "\r\n"
-						~ (keepAlive ? "Connection: keep-alive\r\n\r\n"
-								: "Connection: close\r\n\r\n"
-						);
+						~ "Content-Length: " ~ to!string(response.content.length) ~ "\r\n";
+
+					foreach (key, value; response.headers)
+					{
+						if (key != "Content-Type")
+							responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+					}
+
+					responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+							: "Connection: close\r\n\r\n");
 
 					client.send(cast(ubyte[]) responseHeader);
 					client.send(response.content);
@@ -389,8 +591,17 @@ unittest
 {
 	auto app = new PrismApplication();
 
+	app.serveStatic("/static", "./public");
+	app.serveStatic("/assets", "./assets", true);
+	app.serveStatic("/downloads", "./files");
+
 	app.get("/", (context) => html(
-			"<html><body><h1>Welcome to D Prism Framework</h1></body></html>")
+			`<html><body>
+				<h1>Welcome to D Prism Framework</h1>
+				<p><a href="/static/">Static Files</a></p>
+				<p><a href="/assets/">Assets (with listing)</a></p>
+				<p><a href="/downloads/">Downloads</a></p>
+			</body></html>`)
 	);
 	app.get("/about", (context) => html("<html><body><h1>About Page</h1></body></html>"));
 	app.get("/users/:id", (context) {
