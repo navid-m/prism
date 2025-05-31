@@ -1,9 +1,13 @@
 module prism.ws;
 
 import std;
+import std.socket;
+import std.exception;
+import std.conv;
+import std.array;
 
 /**
- * WebSocket frame opcodes
+ * WebSocket frame opcodes (RFC 6455, Section 5.2)
  */
 enum WebSocketOpcode : ubyte
 {
@@ -16,7 +20,7 @@ enum WebSocketOpcode : ubyte
 }
 
 /**
- * WebSocket frame structure
+ * WebSocket frame structure (RFC 6455, Section 5)
  */
 struct WebSocketFrame
 {
@@ -29,7 +33,7 @@ struct WebSocketFrame
 }
 
 /**
- * WebSocket connection wrapper
+ * WebSocket connection wrapper (RFC 6455)
  */
 class WebSocketConnection
 {
@@ -42,41 +46,33 @@ class WebSocketConnection
         this.socket.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
     }
 
-    /**
-     * Send text message to WebSocket client
-     */
+    /// Send a text message to the client (RFC 6455 §5.6)
     void sendText(string message)
     {
         sendFrame(WebSocketOpcode.TEXT, cast(ubyte[]) message);
     }
 
-    /**
-     * Send binary message to WebSocket client
-     */
+    /// Send binary data to the client
     void sendBinary(ubyte[] data)
     {
         sendFrame(WebSocketOpcode.BINARY, data);
     }
 
-    /**
-     * Send ping frame
-     */
+    /// Send ping control frame (RFC 6455 §5.5.2)
     void ping(ubyte[] data = [])
     {
+        enforce(data.length <= 125, "Ping frame payload too large");
         sendFrame(WebSocketOpcode.PING, data);
     }
 
-    /**
-     * Send pong frame
-     */
+    /// Send pong control frame (RFC 6455 §5.5.3)
     void pong(ubyte[] data = [])
     {
+        enforce(data.length <= 125, "Pong frame payload too large");
         sendFrame(WebSocketOpcode.PONG, data);
     }
 
-    /**
-     * Close WebSocket connection
-     */
+    /// Close the WebSocket connection (RFC 6455 §5.5.1)
     void close(ushort code = 1000, string reason = "")
     {
         if (!isOpen)
@@ -85,21 +81,18 @@ class WebSocketConnection
         ubyte[] closeData;
         closeData ~= cast(ubyte)(code >> 8);
         closeData ~= cast(ubyte)(code & 0xFF);
-        closeData ~= cast(ubyte[]) reason;
+        if (!reason.empty)
+            closeData ~= cast(ubyte[]) reason;
 
         sendFrame(WebSocketOpcode.CLOSE, closeData);
         isOpen = false;
         socket.close();
     }
 
-    /**
-     * Check if connection is open
-     */
+    /// Check if the WebSocket connection is still open
     bool isConnectionOpen() => isOpen;
 
-    /**
-     * Send WebSocket frame
-     */
+    /// Send a WebSocket frame (RFC 6455 §5.2)
     private void sendFrame(WebSocketOpcode opcode, ubyte[] payload)
     {
         if (!isOpen)
@@ -107,24 +100,23 @@ class WebSocketConnection
 
         ubyte[] frame;
         frame ~= 0x80 | cast(ubyte) opcode;
+        size_t len = payload.length;
 
-        if (payload.length < 126)
+        if (len < 126)
         {
-            frame ~= cast(ubyte) payload.length;
+            frame ~= cast(ubyte) len;
         }
-        else if (payload.length <= 65_535)
+        else if (len <= 0xFFFF)
         {
             frame ~= 126;
-            frame ~= cast(ubyte)(payload.length >> 8);
-            frame ~= cast(ubyte)(payload.length & 0xFF);
+            frame ~= cast(ubyte)((len >> 8) & 0xFF);
+            frame ~= cast(ubyte)(len & 0xFF);
         }
         else
         {
             frame ~= 127;
-            for (int i = 7; i >= 0; i--)
-            {
-                frame ~= cast(ubyte)((payload.length >> (i * 8)) & 0xFF);
-            }
+            foreach_reverse (i; 0 .. 8)
+                frame ~= cast(ubyte)((len >> (i * 8)) & 0xFF);
         }
 
         frame ~= payload;
@@ -133,25 +125,20 @@ class WebSocketConnection
         {
             socket.send(frame);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             isOpen = false;
         }
     }
 
-    /**
-     * Receive and parse WebSocket frame
-     */
+    /// Receive and parse a WebSocket frame (RFC 6455 5.2)
     WebSocketFrame receiveFrame()
     {
         WebSocketFrame frame;
         ubyte[2] header;
 
-        auto received = socket.receive(header);
-        if (received <= 0)
-        {
-            throw new Exception("Connection closed");
-        }
+        if (socket.receive(header) != 2)
+            throw new Exception("Failed to read frame header");
 
         frame.fin = (header[0] & 0x80) != 0;
         frame.opcode = cast(WebSocketOpcode)(header[0] & 0x0F);
@@ -161,43 +148,49 @@ class WebSocketConnection
         if (payloadLen == 126)
         {
             ubyte[2] extLen;
-            socket.receive(extLen);
+            enforce(socket.receive(extLen) == 2, "Failed to read extended payload length (16-bit)");
             frame.payloadLength = (extLen[0] << 8) | extLen[1];
         }
         else if (payloadLen == 127)
         {
             ubyte[8] extLen;
-            socket.receive(extLen);
+            enforce(socket.receive(extLen) == 8, "Failed to read extended payload length (64-bit)");
             frame.payloadLength = 0;
-            for (int i = 0; i < 8; i++)
-            {
-                frame.payloadLength = (frame.payloadLength << 8) | extLen[i];
-            }
+            foreach (b; extLen)
+                frame.payloadLength = (frame.payloadLength << 8) | b;
         }
         else
+        {
             frame.payloadLength = payloadLen;
+        }
+
         if (frame.masked)
-            socket.receive(frame.maskingKey);
+        {
+            enforce(socket.receive(frame.maskingKey) == 4, "Failed to read masking key");
+        }
 
         if (frame.payloadLength > 0)
         {
-            frame.payload = new ubyte[frame.payloadLength];
-            size_t totalReceived = 0;
-            while (totalReceived < frame.payloadLength)
+            frame.payload.length = frame.payloadLength;
+            size_t received = 0;
+
+            while (received < frame.payloadLength)
             {
-                auto rcvd = socket.receive(frame.payload[totalReceived .. $]);
-                if (rcvd <= 0)
-                    break;
-                totalReceived += rcvd;
+                auto chunk = socket.receive(frame.payload[received .. $]);
+                if (chunk <= 0)
+                    throw new Exception("Incomplete payload data received");
+                received += chunk;
             }
+
             if (frame.masked)
             {
-                for (size_t i = 0; i < frame.payload.length; i++)
+                foreach (i; 0 .. frame.payload.length)
                 {
                     frame.payload[i] ^= frame.maskingKey[i % 4];
                 }
             }
         }
+
         return frame;
     }
 }
