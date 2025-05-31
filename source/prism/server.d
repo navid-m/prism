@@ -1159,6 +1159,7 @@ unittest
 	},
 		(WebSocketConnection conn, string message) {
 		writeln("Received chat message: ", message);
+
 		foreach (client; chatConnections)
 		{
 			if (client.isConnectionOpen())
@@ -1184,6 +1185,7 @@ unittest
 	},
 		(WebSocketConnection conn) {
 		writeln("Chat client disconnected");
+
 		import std.algorithm : filter;
 		import std.array : array;
 
@@ -1193,6 +1195,7 @@ unittest
 	);
 
 	app.get("/about", (context) => html("<html><body><h1>About Page</h1></body></html>"));
+
 	app.get("/users/:id", (context) {
 		auto userId = context.params.get("id", "unknown");
 		return html("<html><body><h1>User Profile</h1><p>User ID: " ~ userId ~ "</p></body></html>");
