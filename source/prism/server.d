@@ -956,27 +956,32 @@ unittest
 		auto userId = context.params.get("id", "unknown");
 		return html("<html><body><h1>User Profile</h1><p>User ID: " ~ userId ~ "</p></body></html>");
 	});
+
 	app.get("/users/:userId/posts/:postId", (context) {
 		auto userId = context.params.get("userId", "unknown");
 		auto postId = context.params.get("postId", "unknown");
 		return html(
 			"<html><body><h1>User Post</h1><p>User: " ~ userId ~ ", Post: " ~ postId ~ "</p></body></html>");
 	});
+
 	app.get("/search", (context) {
 		auto query = context.query.get("q", "");
 		auto page = context.query.get("page", "1");
 		return html(
 			"<html><body><h1>Search Results</h1><p>Query: " ~ query ~ ", Page: " ~ page ~ "</p></body></html>");
 	});
+
 	app.get("/api/users/:id", (context) {
 		auto userId = context.params.get("id", "0");
 		return json(`{"id": "` ~ userId ~ `", "name": "John Doe", "email": "john@example.com"}`);
 	});
+
 	app.get("/ping", (context) => text("pong"));
 
 	app.post("/api/users", (context) {
 		return json(`{"status": "success", "message": "User created", "data": ` ~ context.body ~ `}`);
 	});
+
 	app.post("/users/:id/update", (context) {
 		auto userId = context.params.get("id", "unknown");
 		return json(
@@ -999,6 +1004,7 @@ unittest
 		auto userId = context.params.get("id", "unknown");
 		return json(`{"status": "success", "message": "User ` ~ userId ~ ` deleted"}`);
 	});
+
 	app.get("/download", (context) {
 		auto fileContent = cast(ubyte[]) "This is binary data";
 		return blob(fileContent);
