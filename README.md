@@ -16,6 +16,7 @@ app.run();
 
 -  Fluent and intuitive URL routing
 -  WebSockets support
+-  SSL Support
 -  Context actions, redirects, etc...
 -  Static file server middleware
 -  Full support for HTTP methods: GET, POST, PUT, PATCH, DELETE
