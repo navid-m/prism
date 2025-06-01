@@ -207,7 +207,7 @@ class PrismApplication
 	}
 
 	/**
-	 * Register WebSocket route
+	 * Register WebSocket route.
 	 */
 	void websocket(string path,
 		WebSocketConnectHandler onConnect = null,
