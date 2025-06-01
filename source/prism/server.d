@@ -226,8 +226,7 @@ class PrismApplication
 			}
 			catch (Exception e)
 			{
-				writeln("SSL setup failed: ", e.msg);
-				writeln("Falling back to HTTP");
+				writefln("SSL setup failed: %s\nUsing HTTP instead.", e.msg);
 				if (sslContext)
 					SSL_CTX_free(sslContext);
 				useSSL = false;
