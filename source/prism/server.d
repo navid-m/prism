@@ -248,6 +248,29 @@ class PrismApplication
 		mimeTypeCache[".xml"] = "application/xml";
 	}
 
+	/** 
+	 * The status messages mapping.
+	 */
+	private immutable string[int] statusMessages = [
+		200: "OK",
+		201: "Created",
+		204: "No Content",
+		301: "Moved Permanently",
+		302: "Found",
+		303: "See Other",
+		304: "Not Modified",
+		307: "Temporary Redirect",
+		308: "Permanent Redirect",
+		400: "Bad Request",
+		401: "Unauthorized",
+		403: "Forbidden",
+		404: "Not Found",
+		405: "Method Not Allowed",
+		500: "Internal Server Error",
+		502: "Bad Gateway",
+		503: "Service Unavailable",
+	];
+
 	/**
 	 * Handle WebSocket upgrade.
 	 */
@@ -578,26 +601,6 @@ class PrismApplication
 		html ~= "</pre><hr></body></html>";
 		return html;
 	}
-
-	private immutable string[int] statusMessages = [
-		200: "OK",
-		201: "Created",
-		204: "No Content",
-		301: "Moved Permanently",
-		302: "Found",
-		303: "See Other",
-		304: "Not Modified",
-		307: "Temporary Redirect",
-		308: "Permanent Redirect",
-		400: "Bad Request",
-		401: "Unauthorized",
-		403: "Forbidden",
-		404: "Not Found",
-		405: "Method Not Allowed",
-		500: "Internal Server Error",
-		502: "Bad Gateway",
-		503: "Service Unavailable",
-	];
 
 	/**
 	 * Get HTTP status message for status code.
