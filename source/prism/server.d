@@ -645,7 +645,6 @@ class PrismApplication
 
 		try
 		{
-			client.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
 			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(30));
 			client.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, dur!"seconds"(30));
 
