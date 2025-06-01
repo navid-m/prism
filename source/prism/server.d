@@ -665,13 +665,10 @@ class PrismApplication
 					}
 
 					if (bytesRead == 0)
-					{
 						return;
-					}
+
 					else if (bytesRead < 0)
-					{
 						return;
-					}
 
 					totalRead += bytesRead;
 					auto chunk = cast(string) buffer[0 .. totalRead];
@@ -749,6 +746,14 @@ class PrismApplication
 		}
 	}
 
+	/** 
+	 * Logic to extract some header. Will return empty if not found.
+	 *
+	 * Params:
+	 *   request = Request with the header
+	 *   headerName = Header being looked for
+	 * Returns: 
+	 */
 	private string extractHeader(string request, string headerName)
 	{
 		auto lowerRequest = request.toLower();
@@ -767,6 +772,14 @@ class PrismApplication
 		return request[headerStart .. lineEnd].strip();
 	}
 
+	/** 
+	 * Send back some response.
+	 *
+	 * Params:
+	 *   client = The client socket
+	 *   response = The response
+	 *   keepAlive = Whether or not to keep connection alive
+	 */
 	private void sendResponse(Socket client, Response response, bool keepAlive)
 	{
 		try
