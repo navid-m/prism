@@ -448,7 +448,7 @@ class PrismApplication
 	}
 
 	/** 
-     * Parse route pattern to extract parameter names.
+	 * Parse route pattern to extract parameter names.
 	 */
 	private auto parseRoutePattern(string path)
 	{
