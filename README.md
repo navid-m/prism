@@ -23,7 +23,7 @@ app.run();
 
 ## Concurrency Benchmark
 
-Achieves sub-1ms latency on average for approx. 14000 concurrent requests from 250 virtual users.
+Achieves sub-1ms latency on average for approx. 14,000 concurrent requests from 250 virtual users.
 
 ```
 ✓ status was 200
