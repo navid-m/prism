@@ -5,6 +5,7 @@ import prism.ws;
 import core.thread;
 import core.sync.mutex;
 import core.sync.condition;
+import core.stdc.errno;
 
 /** 
  * Response type enumeration.
@@ -637,28 +638,57 @@ class PrismApplication
 	 */
 	private void handleClient(Socket client)
 	{
-		bool isWebSocket = false;
-		ubyte[8192] buffer;
+		ubyte[32_768] buffer;
 
 		try
 		{
+			client.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(30));
+			client.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, dur!"seconds"(30));
+
 			while (true)
 			{
 				size_t totalRead = 0;
+				bool headerComplete = false;
 
-				while (totalRead < cast(int) buffer.length - 1)
+				while (totalRead < cast(int) buffer.length - 1 && !headerComplete)
 				{
-					auto bytesRead = client.receive(buffer[totalRead .. $]);
-					if (bytesRead <= 0)
+					ptrdiff_t bytesRead;
+
+					try
+					{
+						bytesRead = client.receive(buffer[totalRead .. $]);
+					}
+					catch (SocketException e)
+					{
+						writeln("Socket receive error: ", e.msg);
 						return;
+					}
+
+					if (bytesRead == 0)
+					{
+						return;
+					}
+					else if (bytesRead < 0)
+					{
+						return;
+					}
 
 					totalRead += bytesRead;
 					auto chunk = cast(string) buffer[0 .. totalRead];
+
 					if (chunk.canFind("\r\n\r\n"))
+					{
+						headerComplete = true;
 						break;
+					}
+					if (totalRead >= cast(int) buffer.length - 1)
+					{
+						writeln("Request too large, closing connection");
+						return;
+					}
 				}
 
-				if (totalRead == 0)
+				if (totalRead == 0 || !headerComplete)
 					return;
 
 				auto request = cast(string) buffer[0 .. totalRead];
@@ -675,7 +705,6 @@ class PrismApplication
 
 				if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
 				{
-					isWebSocket = true;
 					return;
 				}
 
@@ -688,14 +717,19 @@ class PrismApplication
 						response = staticResponse;
 				}
 
-				bool keepAlive = request.toLower()
-					.canFind("connection: keep-alive") &&
-					response.statusCode < 400;
+				bool keepAlive = false;
+				auto connectionHeader = extractHeader(request, "connection");
+				if (connectionHeader.toLower() == "keep-alive" && response.statusCode < 400)
+				{
+					keepAlive = true;
+				}
 
 				sendResponse(client, response, keepAlive);
 
 				if (!keepAlive)
 					break;
+
+				buffer[] = 0;
 			}
 		}
 		catch (Exception e)
@@ -709,6 +743,28 @@ class PrismApplication
 			{
 			}
 		}
+		finally
+		{
+			client.close();
+		}
+	}
+
+	private string extractHeader(string request, string headerName)
+	{
+		auto lowerRequest = request.toLower();
+		auto lowerHeader = headerName.toLower() ~ ":";
+		auto headerStart = lowerRequest.indexOf(lowerHeader);
+
+		if (headerStart == -1)
+			return "";
+
+		headerStart += lowerHeader.length;
+		auto lineEnd = lowerRequest.indexOf("\r\n", headerStart);
+
+		if (lineEnd == -1)
+			return "";
+
+		return request[headerStart .. lineEnd].strip();
 	}
 
 	private void sendResponse(Socket client, Response response, bool keepAlive)
