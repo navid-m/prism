@@ -7,7 +7,7 @@ import core.sync.mutex;
 import core.sync.condition;
 
 /** 
- * Response type enumeration
+ * Response type enumeration.
  */
 enum ResponseType
 {
@@ -19,7 +19,7 @@ enum ResponseType
 }
 
 /** 
- * Response structure containing content and type
+ * Response structure containing content and type.
  */
 struct Response
 {
@@ -42,7 +42,7 @@ struct Response
 }
 
 /** 
- * Request context containing path parameters and query parameters
+ * Request context containing path parameters and query parameters.
  */
 struct RequestContext
 {
@@ -54,7 +54,7 @@ struct RequestContext
 }
 
 /** 
- * Route handlers that can return different response types
+ * Route handlers that can return different response types.
  */
 alias RouteHandler = Response delegate(RequestContext context);
 alias PostRouteHandler = Response delegate(RequestContext context);
@@ -67,7 +67,7 @@ alias WebSocketBinaryHandler = void delegate(WebSocketConnection conn, ubyte[] d
 alias WebSocketCloseHandler = void delegate(WebSocketConnection conn);
 
 /**
- * WebSocket route structure
+ * WebSocket route structure.
  */
 struct WebSocketRoute
 {
@@ -80,7 +80,7 @@ struct WebSocketRoute
 }
 
 /** 
- * Route pattern structure to handle parameterized routes
+ * Route pattern structure to handle parameterized routes.
  */
 struct RoutePattern
 {
@@ -96,7 +96,7 @@ struct RoutePattern
 }
 
 /** 
- * Static file mount configuration
+ * Static file mount configuration.
  */
 struct StaticMount
 {
@@ -106,7 +106,7 @@ struct StaticMount
 }
 
 /**
- * Thread pool for handling connections
+ * Thread pool for handling connections.
  */
 class ThreadPool
 {
