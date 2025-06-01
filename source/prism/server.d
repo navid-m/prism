@@ -717,10 +717,9 @@ class PrismApplication
 
 				bool keepAlive = false;
 				auto connectionHeader = extractHeader(request, "connection");
+
 				if (connectionHeader.toLower() == "keep-alive" && response.statusCode < 400)
-				{
 					keepAlive = true;
-				}
 
 				sendResponse(client, response, keepAlive);
 
