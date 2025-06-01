@@ -909,35 +909,37 @@ class PrismApplication
 	 */
 	private Response handleRoute(string method, string path, ref RequestContext context)
 	{
-		foreach (route; routes)
+		foreach (ref route; routes)
 		{
 			if (route.method != method)
 				continue;
 
-			auto routeRegex = regex(route.pattern);
-			auto match = matchFirst(path, routeRegex);
+			auto m = matchFirst(path, route.compiledRegex);
 
-			if (match)
+			if (!m)
+				continue;
+
+			foreach (i, name; route.paramNames)
 			{
-				for (size_t i = 0; i < route.paramNames.length && i + 1 < match.length;
-					i++)
-					context.params[route.paramNames[i]] = match[i + 1];
+				if (i + 1 < m.length)
+					context.params[name] = m[i + 1];
+			}
 
-				final switch (method)
-				{
-				case "GET":
-					return route.handler(context);
-				case "POST":
-					return route.postHandler(context);
-				case "PUT":
-					return route.putHandler(context);
-				case "PATCH":
-					return route.patchHandler(context);
-				case "DELETE":
-					return route.deleteHandler(context);
-				}
+			final switch (method)
+			{
+			case "GET":
+				return route.handler(context);
+			case "POST":
+				return route.postHandler(context);
+			case "PUT":
+				return route.putHandler(context);
+			case "PATCH":
+				return route.patchHandler(context);
+			case "DELETE":
+				return route.deleteHandler(context);
 			}
 		}
+
 		return Response("404 Not Found", ResponseType.PLAINTEXT, 404);
 	}
 }
