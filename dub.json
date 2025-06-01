@@ -11,5 +11,7 @@
    "license": "GPL-3.0",
    "name": "prism",
    "versions": ["DeimosOpenSSL_3_0"],
-   "lflags": ["lib/libssl.lib", "lib/libcrypto.lib"]
+   "libs-windows": ["lib/libssl", "lib/libcrypto"],
+   "lflags-windows": ["lib/libssl.lib", "lib/libcrypto.lib"],
+   "libs-posix": ["ssl", "crypto"]
 }
