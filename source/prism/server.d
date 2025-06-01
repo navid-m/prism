@@ -704,9 +704,7 @@ class PrismApplication
 				context.method = method;
 
 				if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
-				{
 					return;
-				}
 
 				Response response = handleRoute(method, pathAndQuery.path, context);
 
