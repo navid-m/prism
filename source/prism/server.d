@@ -5,6 +5,9 @@ import prism.ws;
 import core.thread;
 import core.sync.mutex;
 import core.sync.condition;
+import deimos.openssl.opensslv;
+import deimos.openssl.err;
+import deimos.openssl.ssl;
 
 /** 
  * Response type enumeration.
@@ -177,6 +180,8 @@ class ThreadPool
 class PrismApplication
 {
 	private TcpSocket server;
+	private SSL_CTX* sslContext;
+	private bool useSSL = false;
 	private RoutePattern[] routes;
 	private WebSocketRoute[] wsRoutes;
 	private StaticMount[] staticMounts;
@@ -185,14 +190,50 @@ class PrismApplication
 	private shared bool running = true;
 
 	/** 
-	* Instantiate a new application.
-	*
-	* Params:
-	*   port = Port to operate on
-	*   numThreads = Number of worker threads (default: 8)
-	*/
-	this(ushort port = 8080, size_t numThreads = 8)
+    * Instantiate a new application.
+    *
+    * Params:
+    *   port = Port to operate on
+    *   numThreads = Number of worker threads (default: 8)
+    *   certFile = Path to SSL certificate file (optional)
+    *   keyFile = Path to SSL private key file (optional)
+    */
+	this(ushort port = 8080, size_t numThreads = 8, string certFile = null, string keyFile = null)
 	{
+		if (certFile && keyFile)
+		{
+			try
+			{
+				SSL_load_error_strings();
+				SSL_library_init();
+				OpenSSL_add_all_algorithms();
+
+				sslContext = SSL_CTX_new(TLS_server_method());
+				if (!sslContext)
+					throw new Exception("Failed to create SSL context");
+
+				if (SSL_CTX_use_certificate_file(sslContext, certFile.toStringz(), SSL_FILETYPE_PEM) <= 0)
+					throw new Exception("Failed to load certificate file");
+
+				if (SSL_CTX_use_PrivateKey_file(sslContext, keyFile.toStringz(), SSL_FILETYPE_PEM) <= 0)
+					throw new Exception("Failed to load private key file");
+
+				if (!SSL_CTX_check_private_key(sslContext))
+					throw new Exception("Private key does not match certificate");
+
+				useSSL = true;
+				writeln("SSL enabled");
+			}
+			catch (Exception e)
+			{
+				writeln("SSL setup failed: ", e.msg);
+				writeln("Falling back to HTTP");
+				if (sslContext)
+					SSL_CTX_free(sslContext);
+				useSSL = false;
+			}
+		}
+
 		server = new TcpSocket();
 
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
@@ -201,9 +242,15 @@ class PrismApplication
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDBUF, 262_144);
 		server.bind(new InternetAddress(port));
 		server.listen(2048);
-
 		populateMimeTypeCache();
+
 		threadPool = new ThreadPool(numThreads, &handleClient);
+	}
+
+	~this()
+	{
+		if (useSSL && sslContext)
+			SSL_CTX_free(sslContext);
 	}
 
 	/**
@@ -611,7 +658,8 @@ class PrismApplication
 	 */
 	void run()
 	{
-		writeln("Go to http://localhost:8080");
+		string protocol = useSSL ? "https" : "http";
+		writeln("Go to ", protocol, "://localhost:8080");
 
 		scope (exit)
 		{
@@ -635,11 +683,101 @@ class PrismApplication
 		}
 	}
 
-	/** 
-	 * Handle some client.
-	 */
-	private void handleClient(Socket client)
+	private struct SSLSocketWrapper
 	{
+		Socket socket;
+		SSL* ssl;
+		bool isSSL;
+
+		ptrdiff_t receive(ubyte[] buffer)
+		{
+			if (isSSL)
+			{
+				int result = SSL_read(ssl, buffer.ptr, cast(int) buffer.length);
+				if (result <= 0)
+				{
+					int error = SSL_get_error(ssl, result);
+					if (error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE)
+						return 0;
+					return -1;
+				}
+				return result;
+			}
+			else
+			{
+				return socket.receive(buffer);
+			}
+		}
+
+		ptrdiff_t send(const(ubyte)[] data)
+		{
+			if (isSSL)
+			{
+				int result = SSL_write(ssl, data.ptr, cast(int) data.length);
+				if (result <= 0)
+				{
+					int error = SSL_get_error(ssl, result);
+					if (error == SSL_ERROR_WANT_READ || error == SSL_ERROR_WANT_WRITE)
+						return 0;
+					return -1;
+				}
+				return result;
+			}
+			else
+			{
+				return socket.send(data);
+			}
+		}
+
+		void setOption(T)(SocketOptionLevel level, SocketOption option, T value)
+		{
+			socket.setOption(level, option, value);
+		}
+
+		void close()
+		{
+			if (isSSL && ssl)
+			{
+				SSL_shutdown(ssl);
+				SSL_free(ssl);
+			}
+			socket.close();
+		}
+	}
+
+	private void handleClient(Socket clientSocket)
+	{
+		SSLSocketWrapper client;
+		client.socket = clientSocket;
+		client.isSSL = useSSL;
+
+		if (useSSL)
+		{
+			try
+			{
+				client.ssl = SSL_new(sslContext);
+				if (!client.ssl)
+					throw new Exception("Failed to create SSL structure");
+
+				SSL_set_fd(client.ssl, cast(int) clientSocket.handle);
+
+				int result = SSL_accept(client.ssl);
+				if (result <= 0)
+				{
+					int error = SSL_get_error(client.ssl, result);
+					throw new Exception("SSL handshake failed: " ~ to!string(error));
+				}
+			}
+			catch (Exception e)
+			{
+				writeln("SSL handshake failed: ", e.msg);
+				if (client.ssl)
+					SSL_free(client.ssl);
+				clientSocket.close();
+				return;
+			}
+		}
+
 		ubyte[32_768] buffer;
 
 		try
@@ -668,7 +806,6 @@ class PrismApplication
 
 					if (bytesRead == 0)
 						return;
-
 					else if (bytesRead < 0)
 						return;
 
@@ -702,7 +839,7 @@ class PrismApplication
 				context.path = pathAndQuery.path;
 				context.method = method;
 
-				if (handleWebSocketUpgrade(client, request, pathAndQuery.path))
+				if (handleWebSocketUpgrade(client.socket, request, pathAndQuery.path))
 					return;
 
 				Response response = handleRoute(method, pathAndQuery.path, context);
@@ -720,7 +857,7 @@ class PrismApplication
 				if (connectionHeader.toLower() == "keep-alive" && response.statusCode < 400)
 					keepAlive = true;
 
-				sendResponse(client, response, keepAlive);
+				sendSSLResponse(client, response, keepAlive);
 
 				if (!keepAlive)
 					break;
@@ -733,7 +870,7 @@ class PrismApplication
 			try
 			{
 				auto errorResponse = Response("500 Internal Server Error", ResponseType.PLAINTEXT, 500);
-				sendResponse(client, errorResponse, false);
+				sendSSLResponse(client, errorResponse, false);
 			}
 			catch (Exception)
 			{
@@ -742,6 +879,60 @@ class PrismApplication
 		finally
 		{
 			client.close();
+		}
+	}
+
+	private void sendSSLResponse(ref SSLSocketWrapper client, Response response, bool keepAlive)
+	{
+		try
+		{
+			if (response.type == ResponseType.REDIRECT)
+			{
+				string location = response.headers.get("Location", "/");
+				string statusMessage = getStatusMessage(response.statusCode);
+				string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+					"Location: " ~ location ~ "\r\n" ~
+					"Content-Length: 0\r\n";
+
+				foreach (key, value; response.headers)
+				{
+					if (key != "Location")
+						responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+				}
+
+				responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+						: "Connection: close\r\n\r\n");
+				client.send(cast(ubyte[]) responseHeader);
+			}
+			else
+			{
+				string contentType = response.headers.get("Content-Type", getContentType(
+						response.type));
+				string statusMessage = getStatusMessage(response.statusCode);
+				string responseHeader = "HTTP/1.1 " ~ to!string(
+					response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
+					"Content-Type: " ~ contentType ~ "\r\n" ~
+					"Content-Length: " ~ to!string(
+						response.content.length) ~ "\r\n";
+
+				foreach (key, value; response.headers)
+				{
+					if (key != "Content-Type")
+						responseHeader ~= key ~ ": " ~ value ~ "\r\n";
+				}
+
+				responseHeader ~= (keepAlive ? "Connection: keep-alive\r\n\r\n"
+						: "Connection: close\r\n\r\n");
+
+				client.send(cast(ubyte[]) responseHeader);
+
+				if (response.content.length > 0)
+					client.send(response.content);
+			}
+		}
+		catch (Exception e)
+		{
+			writeln("Error sending response: ", e.msg);
 		}
 	}
 

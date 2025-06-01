@@ -1,7 +1,15 @@
 {
    "authors": ["Navid M"],
    "copyright": "Copyright © 2025, Navid M",
+   "dependencies": {
+      "openssl": "~>3.3.4"
+   },
+   "subConfigurations": {
+      "openssl": "library-manual-version"
+   },
    "description": "Performant, modern web framework",
    "license": "GPL-3.0",
-   "name": "prism"
+   "name": "prism",
+   "versions": ["DeimosOpenSSL_3_0"],
+   "lflags": ["lib/libssl.lib", "lib/libcrypto.lib"]
 }
