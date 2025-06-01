@@ -5,7 +5,6 @@ import prism.ws;
 import core.thread;
 import core.sync.mutex;
 import core.sync.condition;
-import core.stdc.errno;
 
 /** 
  * Response type enumeration.
