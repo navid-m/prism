@@ -1,7 +1,7 @@
 ## Usage
 
 ```d
-auto app = new PrismApplication(2000);
+auto app = new PrismApplication();
 
 app.get("/", (context) => html("<h1>Hello</h1>"));
 
