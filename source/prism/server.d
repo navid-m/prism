@@ -658,7 +658,7 @@ class PrismApplication
 	void run()
 	{
 		string protocol = useSSL ? "https" : "http";
-		writeln("Go to ", protocol, "://localhost:8080");
+		writeln("Go to ", protocol, "://localhost:", port);
 
 		scope (exit)
 		{
