@@ -182,6 +182,7 @@ class PrismApplication
 	private TcpSocket server;
 	private SSL_CTX* sslContext;
 	private bool useSSL = false;
+	private int port;
 	private RoutePattern[] routes;
 	private WebSocketRoute[] wsRoutes;
 	private StaticMount[] staticMounts;
@@ -200,6 +201,7 @@ class PrismApplication
     */
 	this(ushort port = 8080, size_t numThreads = 8, string certFile = null, string keyFile = null)
 	{
+		this.port = port;
 		if (certFile && keyFile)
 		{
 			try
@@ -658,7 +660,7 @@ class PrismApplication
 	void run()
 	{
 		string protocol = useSSL ? "https" : "http";
-		writeln("Go to ", protocol, "://localhost:", port);
+		writeln("Go to ", protocol, "://localhost:", this.port);
 
 		scope (exit)
 		{
