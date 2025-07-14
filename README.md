@@ -3,13 +3,13 @@
 ```d
 import prism.server;
 
-auto app = new PrismApplication();
-
-app.get("/", (context) => html("<h1>Hello</h1>"));
-
-app.post("/submit", (context) => json(`{"received": true}`));
-
-app.run();
+void main()
+{
+    auto app = new PrismApplication();
+    app.get("/", (context) => html("<h1>Hello</h1>"));
+    app.post("/submit", (context) => json(`{"received": true}`));
+    app.run();
+}
 ```
 
 ## Features
