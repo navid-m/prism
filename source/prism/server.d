@@ -64,6 +64,8 @@ alias PostRouteHandler = Response delegate(RequestContext context);
 alias PutRouteHandler = Response delegate(RequestContext context);
 alias PatchRouteHandler = Response delegate(RequestContext context);
 alias DeleteRouteHandler = Response delegate(RequestContext context);
+alias OptionsRouteHandler = Response delegate(RequestContext context);
+alias HeadRouteHandler = Response delegate(RequestContext context);
 alias WebSocketConnectHandler = void delegate(WebSocketConnection conn);
 alias WebSocketMessageHandler = void delegate(WebSocketConnection conn, string message);
 alias WebSocketBinaryHandler = void delegate(WebSocketConnection conn, ubyte[] data);
@@ -95,6 +97,8 @@ struct RoutePattern
 	PutRouteHandler putHandler;
 	PatchRouteHandler patchHandler;
 	DeleteRouteHandler deleteHandler;
+	OptionsRouteHandler optionsHandler;
+	HeadRouteHandler headHandler;
 	string method;
 }
 
@@ -238,7 +242,7 @@ class PrismApplication
 		server = new TcpSocket();
 
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
-		server.setOption(SocketOptionLevel.SOCKET, SocketOption.TCP_NODELAY, true);
+		server.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVBUF, 262_144);
 		server.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDBUF, 262_144);
 		server.bind(new InternetAddress(port));
@@ -468,7 +472,7 @@ class PrismApplication
 			pattern.paramNames,
 			pattern.compiledRegex,
 			handler,
-			null, null, null, null,
+			null, null, null, null, null, null,
 			"GET"
 		);
 	}
@@ -489,7 +493,7 @@ class PrismApplication
 			pattern.compiledRegex,
 			null,
 			handler,
-			null, null, null,
+			null, null, null, null, null,
 			"POST"
 		);
 	}
@@ -893,7 +897,11 @@ class PrismApplication
 				string statusMessage = getStatusMessage(response.statusCode);
 				string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
 					"Location: " ~ location ~ "\r\n" ~
-					"Content-Length: 0\r\n";
+					"Content-Length: 0\r\n" ~
+					"X-Content-Type-Options: nosniff\r\n" ~
+					"X-Frame-Options: SAMEORIGIN\r\n" ~
+					"X-XSS-Protection: 1; mode=block\r\n" ~
+					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n";
 
 				foreach (key, value; response.headers)
 				{
@@ -914,7 +922,11 @@ class PrismApplication
 					response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
 					"Content-Type: " ~ contentType ~ "\r\n" ~
 					"Content-Length: " ~ to!string(
-						response.content.length) ~ "\r\n";
+						response.content.length) ~ "\r\n" ~
+					"X-Content-Type-Options: nosniff\r\n" ~
+					"X-Frame-Options: SAMEORIGIN\r\n" ~
+					"X-XSS-Protection: 1; mode=block\r\n" ~
+					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n";
 
 				foreach (key, value; response.headers)
 				{
@@ -981,7 +993,10 @@ class PrismApplication
 				string statusMessage = getStatusMessage(response.statusCode);
 				string responseHeader = "HTTP/1.1 " ~ to!string(response.statusCode) ~ " " ~ statusMessage ~ "\r\n" ~
 					"Location: " ~ location ~ "\r\n" ~
-					"Content-Length: 0\r\n";
+					"Content-Length: 0\r\n" ~
+					"X-Content-Type-Options: nosniff\r\n" ~
+					"X-Frame-Options: SAMEORIGIN\r\n" ~
+					"X-XSS-Protection: 1; mode=block\r\n";
 
 				foreach (key, value; response.headers)
 				{
@@ -1004,7 +1019,10 @@ class PrismApplication
 					"Content-Type: " ~ contentType ~ "\r\n" ~
 					"Content-Length: " ~ to!string(
 						response.content.length
-					) ~ "\r\n";
+					) ~ "\r\n" ~
+					"X-Content-Type-Options: nosniff\r\n" ~
+					"X-Frame-Options: SAMEORIGIN\r\n" ~
+					"X-XSS-Protection: 1; mode=block\r\n";
 
 				foreach (key, value; response.headers)
 				{
@@ -1115,7 +1133,7 @@ class PrismApplication
 			pattern.compiledRegex,
 			null, null,
 			handler,
-			null, null,
+			null, null, null, null,
 			"PUT"
 		);
 	}
@@ -1132,7 +1150,7 @@ class PrismApplication
 			pattern.compiledRegex,
 			null, null, null,
 			handler,
-			null,
+			null, null, null,
 			"PATCH"
 		);
 	}
@@ -1149,7 +1167,40 @@ class PrismApplication
 			pattern.compiledRegex,
 			null, null, null, null,
 			handler,
+			null, null,
 			"DELETE"
+		);
+	}
+
+	/** 
+	 * Register OPTIONS path.
+	 */
+	void options(string path, OptionsRouteHandler handler)
+	{
+		auto pattern = parseRoutePattern(path);
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			pattern.compiledRegex,
+			null, null, null, null, null,
+			handler, null,
+			"OPTIONS"
+		);
+	}
+
+	/** 
+	 * Register HEAD path.
+	 */
+	void head(string path, HeadRouteHandler handler)
+	{
+		auto pattern = parseRoutePattern(path);
+		routes ~= RoutePattern(
+			pattern.pattern,
+			pattern.paramNames,
+			pattern.compiledRegex,
+			null, null, null, null, null,
+			null, handler,
+			"HEAD"
 		);
 	}
 
@@ -1197,6 +1248,10 @@ class PrismApplication
 				return route.patchHandler(context);
 			case "DELETE":
 				return route.deleteHandler(context);
+			case "OPTIONS":
+				return route.optionsHandler(context);
+			case "HEAD":
+				return route.headHandler(context);
 			}
 		}
 
