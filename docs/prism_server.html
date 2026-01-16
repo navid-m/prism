@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs - prism.server</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="search_index.js"></script>
+    <style>
+        .highlight-result {
+            border: 2px solid #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            transition: all 0.5s ease-in-out;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'code-bg': '#0d1117',
+                        'card-bg': '#161b22',
+                        'border-color': '#30363d',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8">
+            <div class="bg-card-bg rounded-2xl p-8 shadow-2xl border border-border-color">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <a href="index.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors group">
+                        <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back to Index
+                    </a>
+                    <div class="flex items-center gap-4">
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-functions-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Functions</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-fields-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Attributes</span>
+                        </label>
+                        <div class="relative w-64">
+                            <input type="text" id="global-search" placeholder="Search docs..." class="w-full bg-gray-900 border border-border-color rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-gray-500">
+                            <div id="search-results" class="absolute z-50 w-full mt-2 bg-card-bg border border-border-color rounded-lg shadow-xl hidden max-h-96 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">prism.server</h1>
+            </div>
+        </header>
+
+        <main class="space-y-8">
+<section class="bg-card-bg rounded-xl shadow-lg border border-border-color overflow-hidden">
+<div class="p-6 space-y-6">
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="Response" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+Response
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Response structure containing content and type.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+ubyte[] content;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="prism_server.html#ResponseType" class="text-blue-400 hover:text-blue-300 transition-colors">ResponseType</a> type;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>] headers;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/spec/type.html#int" class="text-blue-400 hover:text-blue-300 transition-colors">int</a> statusCode = 200;
+</div>
+</div>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Methods</h4>
+<div class="space-y-3">
+<div id="Response.this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">this</span><span class="text-gray-500">(ubyte[] content, ResponseType type = ResponseType.HTML, int statusCode = 200)</span>
+</div>
+</div>
+<div id="Response.this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">this</span><span class="text-gray-500">(string content, ResponseType type = ResponseType.HTML, int statusCode = 200)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="RequestContext" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+RequestContext
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Request context containing path parameters and query parameters.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>] params;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>] query;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> body;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> path;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> method;
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="WebSocketRoute" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+WebSocketRoute
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">WebSocket route structure.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> pattern;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[] paramNames;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+WebSocketConnectHandler onConnect;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+WebSocketMessageHandler onMessage;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+WebSocketBinaryHandler onBinary;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+WebSocketCloseHandler onClose;
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="RoutePattern" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+RoutePattern
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Route pattern structure to handle parameterized routes.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> pattern;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[] paramNames;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+Regex!char compiledRegex;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+RouteHandler handler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+PostRouteHandler postHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+PutRouteHandler putHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+PatchRouteHandler patchHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+DeleteRouteHandler deleteHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+OptionsRouteHandler optionsHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+HeadRouteHandler headHandler;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> method;
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="StaticMount" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+StaticMount
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Static file mount configuration.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> mountPath;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a> rootPath;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> listDirectories = false;
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="ThreadPool" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">class</span>
+ThreadPool
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Thread pool for handling connections.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private Thread[] workers;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private Socket[] taskQueue;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private Mutex queueMutex;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private Condition queueCondition;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private shared <a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> running = true;
+</div>
+</div>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Methods</h4>
+<div class="space-y-3">
+<div id="ThreadPool.delegate" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">delegate</span><span class="text-gray-500">(Socket)</span>
+</div>
+</div>
+<div id="ThreadPool.this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">this</span><span class="text-gray-500">(size_t numThreads, void delegate(Socket)</span>
+</div>
+</div>
+<div id="ThreadPool.addTask" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">addTask</span><span class="text-gray-500">(Socket client)</span>
+</div>
+</div>
+<div id="ThreadPool.workerLoop" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">workerLoop</span><span class="text-gray-500">()</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="PrismApplication" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">class</span>
+PrismApplication
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">The application itself.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private TcpSocket server;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private SSL_CTX* sslContext;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> useSSL = false;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="https://dlang.org/spec/type.html#int" class="text-blue-400 hover:text-blue-300 transition-colors">int</a> port;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="prism_server.html#RoutePattern" class="text-blue-400 hover:text-blue-300 transition-colors">RoutePattern</a>[] routes;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="prism_server.html#WebSocketRoute" class="text-blue-400 hover:text-blue-300 transition-colors">WebSocketRoute</a>[] wsRoutes;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="prism_server.html#StaticMount" class="text-blue-400 hover:text-blue-300 transition-colors">StaticMount</a>[] staticMounts;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>[<a href="https://dlang.org/phobos/std_string.html" class="text-blue-400 hover:text-blue-300 transition-colors">string</a>] mimeTypeCache;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="prism_server.html#ThreadPool" class="text-blue-400 hover:text-blue-300 transition-colors">ThreadPool</a> threadPool;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private shared <a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> running = true;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+];
+</div>
+</div>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Methods</h4>
+<div class="space-y-3">
+<div id="PrismApplication.this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">this</span><span class="text-gray-500">(ushort port = 8080, size_t numThreads = 8, string certFile = null, string keyFile = null)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Instantiate a new application.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">port</td>
+<td class="py-2 px-4 text-gray-400 align-top">Port to operate on</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">numThreads</td>
+<td class="py-2 px-4 text-gray-400 align-top">Number of worker threads (default: 8)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">certFile</td>
+<td class="py-2 px-4 text-gray-400 align-top">Path to SSL certificate file (optional)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">keyFile</td>
+<td class="py-2 px-4 text-gray-400 align-top">Path to SSL private key file (optional)</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div id="PrismApplication.~this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">~this</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="PrismApplication.populateMimeTypeCache" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">populateMimeTypeCache</span><span class="text-gray-500">()</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Populate the MIME type cache.</p>
+</div>
+</div>
+<div id="PrismApplication.handleWebSocketUpgrade" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private bool</span> <span class="text-blue-400 font-semibold">handleWebSocketUpgrade</span><span class="text-gray-500">(Socket client, string request, string path)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Handle WebSocket upgrade.</p>
+</div>
+</div>
+<div id="PrismApplication.generateWebSocketAcceptKey" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">generateWebSocketAcceptKey</span><span class="text-gray-500">(string key)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Generate WebSocket accept key.</p>
+</div>
+</div>
+<div id="PrismApplication.handleWebSocketConnection" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">handleWebSocketConnection</span><span class="text-gray-500">(WebSocketConnection conn, WebSocketRoute route, RequestContext context)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Handle WebSocket connection lifecycle.</p>
+</div>
+</div>
+<div id="PrismApplication.useStatic" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">useStatic</span><span class="text-gray-500">(string mountPath, string rootPath, bool listDirectories = false)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Mount a static file directory at a specific URL path.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">mountPath</td>
+<td class="py-2 px-4 text-gray-400 align-top">URL path prefix (e.g., &quot;/static&quot;, &quot;/assets&quot;)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">rootPath</td>
+<td class="py-2 px-4 text-gray-400 align-top">Filesystem directory path (e.g., &quot;./public&quot;, &quot;./assets&quot;)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">listDirectories</td>
+<td class="py-2 px-4 text-gray-400 align-top">Whether to allow directory listing (default: false)</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div id="PrismApplication.get" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">get</span><span class="text-gray-500">(string path, RouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Set a GET method route with optional URL parameters.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">path</td>
+<td class="py-2 px-4 text-gray-400 align-top">The path pattern (e.g., &quot;/users/:id&quot; or &quot;/users/:id/posts/:postId&quot;)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">handler</td>
+<td class="py-2 px-4 text-gray-400 align-top">The handler/delegate for the route</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div id="PrismApplication.post" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">post</span><span class="text-gray-500">(string path, PostRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Set a POST method route with optional URL parameters.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">path</td>
+<td class="py-2 px-4 text-gray-400 align-top">The path pattern (e.g., &quot;/users/:id&quot; or &quot;/api/data&quot;)</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">handler</td>
+<td class="py-2 px-4 text-gray-400 align-top">The handler/delegate for the route</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div id="PrismApplication.parseRoutePattern" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private auto</span> <span class="text-blue-400 font-semibold">parseRoutePattern</span><span class="text-gray-500">(string path)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Parse route pattern to extract parameter names.</p>
+</div>
+</div>
+<div id="PrismApplication.getMimeType" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">getMimeType</span><span class="text-gray-500">(string filePath)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Get MIME type based on file extension.</p>
+</div>
+</div>
+<div id="PrismApplication.tryServeStatic" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private Response</span> <span class="text-blue-400 font-semibold">tryServeStatic</span><span class="text-gray-500">(string requestPath)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Try to serve a static file.</p>
+</div>
+</div>
+<div id="PrismApplication.generateDirectoryListing" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">generateDirectoryListing</span><span class="text-gray-500">(string dirPath, string urlPath)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Generate HTML directory listing.</p>
+</div>
+</div>
+<div id="PrismApplication.getStatusMessage" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">getStatusMessage</span><span class="text-gray-500">(int statusCode)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Get HTTP status message for status code.</p>
+</div>
+</div>
+<div id="PrismApplication.run" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">run</span><span class="text-gray-500">()</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Run the application.</p>
+</div>
+</div>
+<div id="PrismApplication.handleClient" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">handleClient</span><span class="text-gray-500">(Socket clientSocket)</span>
+</div>
+</div>
+<div id="PrismApplication.sendSSLResponse" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">sendSSLResponse</span><span class="text-gray-500">(ref SSLSocketWrapper client, Response response, bool keepAlive)</span>
+</div>
+</div>
+<div id="PrismApplication.extractHeader" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">extractHeader</span><span class="text-gray-500">(string request, string headerName)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Logic to extract some header. Will return empty if not found.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">request</td>
+<td class="py-2 px-4 text-gray-400 align-top">Request with the header</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">headerName</td>
+<td class="py-2 px-4 text-gray-400 align-top">Header being looked for</td>
+</tr>
+</tbody></table>
+<div class="mt-4 text-gray-300"><span class="font-bold text-gray-200">Returns:</span> </div>
+</div>
+</div>
+<div id="PrismApplication.sendResponse" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">sendResponse</span><span class="text-gray-500">(Socket client, Response response, bool keepAlive)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send back some response.</p>
+<div class="font-bold text-gray-200 mt-4 mb-2">Params:</div>
+<table class="w-full text-left border-collapse mb-4 border border-gray-600">
+<tbody>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">client</td>
+<td class="py-2 px-4 text-gray-400 align-top">The client socket</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">response</td>
+<td class="py-2 px-4 text-gray-400 align-top">The response</td>
+</tr>
+<tr class="border-b border-gray-600 last:border-0">
+<td class="py-2 px-4 border-r border-gray-600 font-mono text-blue-300 font-semibold whitespace-nowrap align-top min-w-[8rem]">keepAlive</td>
+<td class="py-2 px-4 text-gray-400 align-top">Whether or not to keep connection alive</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div id="PrismApplication.parsePathAndQuery" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private auto</span> <span class="text-blue-400 font-semibold">parsePathAndQuery</span><span class="text-gray-500">(string fullPath)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Parse path and query parameters</p>
+</div>
+</div>
+<div id="PrismApplication.getContentType" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">getContentType</span><span class="text-gray-500">(ResponseType type)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Get content type based on response type</p>
+</div>
+</div>
+<div id="PrismApplication.extractMethod" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">extractMethod</span><span class="text-gray-500">(string request)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Extract the HTTP method from the request.</p>
+</div>
+</div>
+<div id="PrismApplication.extractPath" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">extractPath</span><span class="text-gray-500">(string request)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Extract the path given some URI request in string form.</p>
+</div>
+</div>
+<div id="PrismApplication.put" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">put</span><span class="text-gray-500">(string path, PutRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Register PUT path.</p>
+</div>
+</div>
+<div id="PrismApplication.patch" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">patch</span><span class="text-gray-500">(string path, PatchRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Register PATCH path.</p>
+</div>
+</div>
+<div id="PrismApplication.del" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">del</span><span class="text-gray-500">(string path, DeleteRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Register DELETE path.</p>
+</div>
+</div>
+<div id="PrismApplication.options" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">options</span><span class="text-gray-500">(string path, OptionsRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Register OPTIONS path.</p>
+</div>
+</div>
+<div id="PrismApplication.head" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">head</span><span class="text-gray-500">(string path, HeadRouteHandler handler)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Register HEAD path.</p>
+</div>
+</div>
+<div id="PrismApplication.extractBody" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private string</span> <span class="text-blue-400 font-semibold">extractBody</span><span class="text-gray-500">(string request)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Extract the request body from a POST request.</p>
+</div>
+</div>
+<div id="PrismApplication.handleRoute" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private Response</span> <span class="text-blue-400 font-semibold">handleRoute</span><span class="text-gray-500">(string method, string path, ref RequestContext context)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Handle the route based on method and path with parameter matching.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-card-bg rounded-xl shadow-lg border border-border-color overflow-hidden">
+<div class="p-6 space-y-6">
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="ResponseType" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">ENUM</span>
+ResponseType
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">Response type enumeration.</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Members</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">HTML</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">JSON</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">PLAINTEXT</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">BLOB</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">REDIRECT</span></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-card-bg rounded-xl shadow-lg border border-border-color overflow-hidden">
+<div class="p-6 space-y-4">
+<div id="html" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">html</span><span class="text-gray-500">(string content)</span>
+</div>
+</div>
+<div id="json" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">json</span><span class="text-gray-500">(string content)</span>
+</div>
+</div>
+<div id="text" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">text</span><span class="text-gray-500">(string content)</span>
+</div>
+</div>
+<div id="blob" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">blob</span><span class="text-gray-500">(ubyte[] content)</span>
+</div>
+</div>
+<div id="blob" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">blob</span><span class="text-gray-500">(string content)</span>
+</div>
+</div>
+<div id="redirect" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">redirect</span><span class="text-gray-500">(string location, int statusCode = 302)</span>
+</div>
+</div>
+<div id="permanentRedirect" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">permanentRedirect</span><span class="text-gray-500">(string location)</span>
+</div>
+</div>
+<div id="temporaryRedirect" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">temporaryRedirect</span><span class="text-gray-500">(string location)</span>
+</div>
+</div>
+<div id="seeOther" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">Response</span> <span class="text-blue-400 font-semibold text-base">seeOther</span><span class="text-gray-500">(string location)</span>
+</div>
+</div>
+<div id="setUsername" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">setUsername</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="connectWebSocket" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">connectWebSocket</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="sendMessage" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">sendMessage</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="addMessage" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">addMessage</span><span class="text-gray-500">(user, text, isOwn)</span>
+</div>
+</div>
+<div id="updateStatus" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">updateStatus</span><span class="text-gray-500">(status)</span>
+</div>
+</div>
+<div id="escapeHtml" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">function</span> <span class="text-blue-400 font-semibold text-base">escapeHtml</span><span class="text-gray-500">(text)</span>
+</div>
+</div>
+<div id="sendMessage" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">sendMessage</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="setUsername" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">setUsername</span><span class="text-gray-500">()</span>
+</div>
+</div>
+<div id="writeln" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">writeln</span><span class="text-gray-500">(&quot;Client connected to chat. Total connections: &quot;, chatConnections.length)</span>
+</div>
+</div>
+<div id="writeln" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">writeln</span><span class="text-gray-500">(&quot;Received chat message: &quot;, message)</span>
+</div>
+</div>
+<div id="catch" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">catch</span><span class="text-gray-500">(Exception e)</span>
+</div>
+</div>
+<div id="writeln" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">writeln</span><span class="text-gray-500">(&quot;Received binary data in chat: &quot;, data.length, &quot; bytes&quot;)</span>
+</div>
+</div>
+<div id="writeln" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">writeln</span><span class="text-gray-500">(&quot;Chat client disconnected&quot;)</span>
+</div>
+</div>
+<div id="writeln" class="bg-gray-800/40 rounded-lg p-5 border border-border-color hover:border-red-500/50 transition-colors">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold text-base">writeln</span><span class="text-gray-500">(&quot;Total connections: &quot;, chatConnections.length)</span>
+</div>
+</div>
+</div>
+</section>
+
+        </main>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Generated with <a href="https://github.com/navid-m/ceres">Ceres</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('global-search');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            const results = searchIndex.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                (item.module && item.module.toLowerCase().includes(query))
+            ).slice(0, 10);
+
+            if (results.length > 0) {
+                searchResults.innerHTML = results.map(item => `
+                    <a href="${item.link}" class="block p-3 hover:bg-gray-800 border-b border-border-color last:border-0">
+                        <div class="text-sm font-semibold text-blue-400">${item.name}</div>
+                        <div class="text-xs text-gray-500">${item.type} ${item.module ? 'in ' + item.module : ''}</div>
+                    </a>
+                `).join('');
+                searchResults.classList.remove('hidden');
+            } else {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        function togglePrivateElements(checkboxId, selector) {
+            const checkbox = document.getElementById(checkboxId);
+            if (!checkbox) return;
+
+            const updateVisibility = () => {
+                const elements = document.querySelectorAll(selector);
+                const show = !checkbox.checked;
+                elements.forEach(el => el.style.display = show ? '' : 'none');
+            };
+
+            checkbox.addEventListener('change', updateVisibility);
+            updateVisibility();
+        }
+
+        togglePrivateElements('hide-private-functions-checkbox', '.private-function, .private-method');
+        togglePrivateElements('hide-private-fields-checkbox', '.private-field');
+
+        function highlightSearchResult() {
+            const hash = window.location.hash;
+            document.querySelectorAll('.highlight-result').forEach(el => el.classList.remove('highlight-result'));
+            
+            if (hash) {
+                const id = hash.substring(1);
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('highlight-result');
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        window.addEventListener('hashchange', highlightSearchResult);
+        if (window.location.hash) {
+            setTimeout(highlightSearchResult, 100);
+        }
+    </script>
+</body>
+</html>

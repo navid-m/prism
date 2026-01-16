@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs - prism</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="search_index.js"></script>
+    <style>
+        .highlight-result {
+            border: 2px solid #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            transition: all 0.5s ease-in-out;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'code-bg': '#0d1117',
+                        'card-bg': '#161b22',
+                        'border-color': '#30363d',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8">
+            <div class="bg-card-bg rounded-2xl p-8 shadow-2xl border border-border-color">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <a href="index.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors group">
+                        <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back to Index
+                    </a>
+                    <div class="flex items-center gap-4">
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-functions-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Functions</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-fields-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Attributes</span>
+                        </label>
+                        <div class="relative w-64">
+                            <input type="text" id="global-search" placeholder="Search docs..." class="w-full bg-gray-900 border border-border-color rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-gray-500">
+                            <div id="search-results" class="absolute z-50 w-full mt-2 bg-card-bg border border-border-color rounded-lg shadow-xl hidden max-h-96 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">prism</h1>
+            </div>
+        </header>
+
+        <main class="space-y-8">
+
+        </main>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Generated with <a href="https://github.com/navid-m/ceres">Ceres</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('global-search');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            const results = searchIndex.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                (item.module && item.module.toLowerCase().includes(query))
+            ).slice(0, 10);
+
+            if (results.length > 0) {
+                searchResults.innerHTML = results.map(item => `
+                    <a href="${item.link}" class="block p-3 hover:bg-gray-800 border-b border-border-color last:border-0">
+                        <div class="text-sm font-semibold text-blue-400">${item.name}</div>
+                        <div class="text-xs text-gray-500">${item.type} ${item.module ? 'in ' + item.module : ''}</div>
+                    </a>
+                `).join('');
+                searchResults.classList.remove('hidden');
+            } else {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        function togglePrivateElements(checkboxId, selector) {
+            const checkbox = document.getElementById(checkboxId);
+            if (!checkbox) return;
+
+            const updateVisibility = () => {
+                const elements = document.querySelectorAll(selector);
+                const show = !checkbox.checked;
+                elements.forEach(el => el.style.display = show ? '' : 'none');
+            };
+
+            checkbox.addEventListener('change', updateVisibility);
+            updateVisibility();
+        }
+
+        togglePrivateElements('hide-private-functions-checkbox', '.private-function, .private-method');
+        togglePrivateElements('hide-private-fields-checkbox', '.private-field');
+
+        function highlightSearchResult() {
+            const hash = window.location.hash;
+            document.querySelectorAll('.highlight-result').forEach(el => el.classList.remove('highlight-result'));
+            
+            if (hash) {
+                const id = hash.substring(1);
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('highlight-result');
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        window.addEventListener('hashchange', highlightSearchResult);
+        if (window.location.hash) {
+            setTimeout(highlightSearchResult, 100);
+        }
+    </script>
+</body>
+</html>

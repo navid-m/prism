@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs - prism.ws</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="search_index.js"></script>
+    <style>
+        .highlight-result {
+            border: 2px solid #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            transition: all 0.5s ease-in-out;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'code-bg': '#0d1117',
+                        'card-bg': '#161b22',
+                        'border-color': '#30363d',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8">
+            <div class="bg-card-bg rounded-2xl p-8 shadow-2xl border border-border-color">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <a href="index.html" class="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors group">
+                        <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back to Index
+                    </a>
+                    <div class="flex items-center gap-4">
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-functions-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Functions</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="hide-private-fields-checkbox" class="sr-only peer" checked>
+                            <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-sm font-medium text-gray-300 group-hover:text-white transition-colors select-none">Hide Private Attributes</span>
+                        </label>
+                        <div class="relative w-64">
+                            <input type="text" id="global-search" placeholder="Search docs..." class="w-full bg-gray-900 border border-border-color rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-gray-500">
+                            <div id="search-results" class="absolute z-50 w-full mt-2 bg-card-bg border border-border-color rounded-lg shadow-xl hidden max-h-96 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-4xl font-bold text-white mb-2">prism.ws</h1>
+            </div>
+        </header>
+
+        <main class="space-y-8">
+<section class="bg-card-bg rounded-xl shadow-lg border border-border-color overflow-hidden">
+<div class="p-6 space-y-6">
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="WebSocketFrame" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">struct</span>
+WebSocketFrame
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">WebSocket frame structure (RFC 6455, Section 5)</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> fin;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="prism_ws.html#WebSocketOpcode" class="text-blue-400 hover:text-blue-300 transition-colors">WebSocketOpcode</a> opcode;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> masked;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+ulong payloadLength;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+ubyte[4] maskingKey;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+ubyte[] payload;
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="WebSocketConnection" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">class</span>
+WebSocketConnection
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">WebSocket connection wrapper (RFC 6455)</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Fields</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private Socket socket;
+</div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300 private-field">
+private <a href="https://dlang.org/spec/type.html#bool" class="text-blue-400 hover:text-blue-300 transition-colors">bool</a> isOpen = true;
+</div>
+</div>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Methods</h4>
+<div class="space-y-3">
+<div id="WebSocketConnection.this" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400"></span> <span class="text-blue-400 font-semibold">this</span><span class="text-gray-500">(Socket socket)</span>
+</div>
+</div>
+<div id="WebSocketConnection.sendText" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">sendText</span><span class="text-gray-500">(string message)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send a text message to the client (RFC 6455 5.6)</p>
+</div>
+</div>
+<div id="WebSocketConnection.sendBinary" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">sendBinary</span><span class="text-gray-500">(ubyte[] data)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send binary data to the client</p>
+</div>
+</div>
+<div id="WebSocketConnection.ping" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">ping</span><span class="text-gray-500">(ubyte[] data = [])</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send ping control frame (RFC 6455 5.5.2)</p>
+</div>
+</div>
+<div id="WebSocketConnection.pong" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">pong</span><span class="text-gray-500">(ubyte[] data = [])</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send pong control frame (RFC 6455 5.5.3)</p>
+</div>
+</div>
+<div id="WebSocketConnection.close" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">void</span> <span class="text-blue-400 font-semibold">close</span><span class="text-gray-500">(ushort code = 1000, string reason = &quot;&quot;)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Close the WebSocket connection (RFC 6455 5.5.1)</p>
+</div>
+</div>
+<div id="WebSocketConnection.isConnectionOpen" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">bool</span> <span class="text-blue-400 font-semibold">isConnectionOpen</span><span class="text-gray-500">()</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Check if the WebSocket connection is still open</p>
+</div>
+</div>
+<div id="WebSocketConnection.sendFrame" class="bg-code-bg rounded-lg p-4 border border-border-color private-method">
+<div class="font-mono text-sm">
+<span class="text-red-400">private void</span> <span class="text-blue-400 font-semibold">sendFrame</span><span class="text-gray-500">(WebSocketOpcode opcode, ubyte[] payload)</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Send a WebSocket frame (RFC 6455 5.2)</p>
+</div>
+</div>
+<div id="WebSocketConnection.receiveFrame" class="bg-code-bg rounded-lg p-4 border border-border-color">
+<div class="font-mono text-sm">
+<span class="text-red-400">WebSocketFrame</span> <span class="text-blue-400 font-semibold">receiveFrame</span><span class="text-gray-500">()</span>
+</div>
+<div class="mt-2 pl-3 border-l border-blue-500/50">
+<p class="text-gray-300 leading-relaxed">Receive and parse a WebSocket frame (RFC 6455 5.2)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-card-bg rounded-xl shadow-lg border border-border-color overflow-hidden">
+<div class="p-6 space-y-6">
+<div class="bg-gray-800/40 rounded-lg p-6 border border-border-color hover:border-red-500/50 transition-colors">
+<h3 id="WebSocketOpcode" class="text-xl font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+<span class="text-gray-500 text-sm font-normal uppercase tracking-wide">ENUM</span>
+WebSocketOpcode
+</h3>
+<div class="mb-4 pl-4 border-l-2 border-red-500/50">
+<p class="text-gray-300 leading-relaxed">WebSocket frame opcodes (RFC 6455, Section 5.2)</p>
+</div>
+<div class="mt-4">
+<h4 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Members</h4>
+<div class="space-y-2">
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">CONTINUATION</span> = <span class="text-green-400">0x0</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">TEXT</span> = <span class="text-green-400">0x1</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">BINARY</span> = <span class="text-green-400">0x2</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">CLOSE</span> = <span class="text-green-400">0x8</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">PING</span> = <span class="text-green-400">0x9</span></div>
+<div class="bg-code-bg rounded p-3 border border-border-color font-mono text-sm text-gray-300">
+<span class="text-blue-400 font-semibold">PONG</span> = <span class="text-green-400">0xA</span></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+        </main>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Generated with <a href="https://github.com/navid-m/ceres">Ceres</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('global-search');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            const results = searchIndex.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                (item.module && item.module.toLowerCase().includes(query))
+            ).slice(0, 10);
+
+            if (results.length > 0) {
+                searchResults.innerHTML = results.map(item => `
+                    <a href="${item.link}" class="block p-3 hover:bg-gray-800 border-b border-border-color last:border-0">
+                        <div class="text-sm font-semibold text-blue-400">${item.name}</div>
+                        <div class="text-xs text-gray-500">${item.type} ${item.module ? 'in ' + item.module : ''}</div>
+                    </a>
+                `).join('');
+                searchResults.classList.remove('hidden');
+            } else {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        function togglePrivateElements(checkboxId, selector) {
+            const checkbox = document.getElementById(checkboxId);
+            if (!checkbox) return;
+
+            const updateVisibility = () => {
+                const elements = document.querySelectorAll(selector);
+                const show = !checkbox.checked;
+                elements.forEach(el => el.style.display = show ? '' : 'none');
+            };
+
+            checkbox.addEventListener('change', updateVisibility);
+            updateVisibility();
+        }
+
+        togglePrivateElements('hide-private-functions-checkbox', '.private-function, .private-method');
+        togglePrivateElements('hide-private-fields-checkbox', '.private-field');
+
+        function highlightSearchResult() {
+            const hash = window.location.hash;
+            document.querySelectorAll('.highlight-result').forEach(el => el.classList.remove('highlight-result'));
+            
+            if (hash) {
+                const id = hash.substring(1);
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('highlight-result');
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        window.addEventListener('hashchange', highlightSearchResult);
+        if (window.location.hash) {
+            setTimeout(highlightSearchResult, 100);
+        }
+    </script>
+</body>
+</html>
